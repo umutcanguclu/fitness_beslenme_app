@@ -27,7 +27,23 @@
       "Bash(pnpm --filter @fittrack/api test)",
       "Bash(node -e \"import\\('dotenv'\\).then\\(d => { d.config\\(\\); console.log\\('NODE_ENV:', process.env.NODE_ENV, 'JWT_SECRET len:', process.env.JWT_SECRET?.length\\) }\\)\")",
       "Bash(node --import tsx -e \"process.env.NODE_ENV='test'; process.env.DATABASE_URL='postgresql://x:y@z:5432/db'; process.env.JWT_SECRET='x'.repeat\\(20\\); process.env.JWT_REFRESH_SECRET='y'.repeat\\(20\\); const m = await import\\('./src/lib/env.ts'\\); console.log\\('ok', m.env.NODE_ENV\\)\")",
-      "Bash(flutter test *)"
+      "Bash(flutter test *)",
+      "Bash(cmd.exe //c \"dev.bat check\")",
+      "Bash(cmd.exe //c \".\\\\\\\\dev.bat check\")",
+      "Bash(powershell -NoProfile -Command \"cmd /c '.\\\\\\\\dev.bat check'\")",
+      "Bash(xxd)",
+      "Bash(r)",
+      "Bash(powershell -NoProfile -Command \"\\(Get-Content 'C:\\\\Users\\\\umutc\\\\OneDrive\\\\Desktop\\\\Fitness_beslenme_app\\\\dev.bat' -Raw\\) -replace '\\(?<!\\\\r\\)\\\\n', \\\\\"`r`n\\\\\" | Set-Content -NoNewline -Encoding ASCII 'C:\\\\Users\\\\umutc\\\\OneDrive\\\\Desktop\\\\Fitness_beslenme_app\\\\dev.bat'\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const p='C:/Users/umutc/OneDrive/Desktop/Fitness_beslenme_app/dev.bat';const c=fs.readFileSync\\(p,'utf8'\\);fs.writeFileSync\\(p,c.replace\\(/\\\\r?\\\\n/g,'\\\\r\\\\n'\\),{encoding:'utf8'}\\);console.log\\('converted'\\)\")",
+      "Bash(powershell -NoProfile -Command \"cd 'C:\\\\Users\\\\umutc\\\\OneDrive\\\\Desktop\\\\Fitness_beslenme_app'; & cmd /c 'dev.bat check' 2>&1\")",
+      "Bash(powershell -NoProfile -Command \"Test-Path 'C:\\\\Users\\\\umutc\\\\OneDrive\\\\Desktop\\\\Fitness_beslenme_app\\\\dev.bat'\")",
+      "Bash(powershell -NoProfile -Command \"Start-Process -FilePath 'C:\\\\Windows\\\\System32\\\\cmd.exe' -ArgumentList '/c','C:\\\\Users\\\\umutc\\\\OneDrive\\\\Desktop\\\\Fitness_beslenme_app\\\\dev.bat check' -Wait -NoNewWindow\")",
+      "Bash(powershell *)",
+      "Bash([ -f \"$FILE\" ])",
+      "Bash(xargs cat *)",
+      "Bash(node *)",
+      "Bash(xargs -I{} grep -l \"\\\\[OK\\\\]\\\\|\\\\[FAIL\\\\]\\\\|\\\\[ABORT\\\\]\" {})",
+      "Bash(xargs tail *)"
     ]
   }
 }
