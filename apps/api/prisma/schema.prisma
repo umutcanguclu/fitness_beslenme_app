@@ -1,0 +1,161 @@
+// Prisma schema for FitTrack API.
+// Run `pnpm --filter @fittrack/api db:generate` after editing.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Locale {
+  en
+  tr
+}
+
+enum UnitSystem {
+  metric
+  imperial
+}
+
+enum Gender {
+  male
+  female
+  other
+  prefer_not_to_say
+}
+
+enum Goal {
+  lose_fat
+  gain_muscle
+  maintain
+  general_fitness
+}
+
+enum PrMetric {
+  one_rep_max
+  best_set_weight
+  best_set_reps
+  best_time
+  best_distance
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  locale       Locale   @default(en)
+  unitSystem   UnitSystem @default(metric)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile       Profile?
+  workouts      Workout[]
+  templates     Template[]
+  prs           PersonalRecord[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Profile {
+  userId    String   @id
+  heightCm  Float?
+  weightKg  Float?
+  age       Int?
+  gender    Gender?
+  goal      Goal?
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Template {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises TemplateExercise[]
+  workouts  Workout[]
+
+  @@index([userId])
+}
+
+model TemplateExercise {
+  id         String @id @default(uuid())
+  templateId String
+  exerciseId String
+  order      Int
+  targetSets Int?
+  targetReps Int?
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+}
+
+model Workout {
+  id         String    @id @default(uuid())
+  userId     String
+  templateId String?
+  name       String?
+  notes      String?
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  sets     WorkoutSet[]
+
+  @@index([userId, startedAt])
+}
+
+model WorkoutSet {
+  id             String    @id @default(uuid())
+  workoutId      String
+  exerciseId     String
+  order          Int
+  weightKg       Float?
+  reps           Int?
+  timeSeconds    Int?
+  distanceMeters Int?
+  rpe            Float?
+  completedAt    DateTime?
+
+  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([workoutId, order])
+  @@index([exerciseId])
+}
+
+model PersonalRecord {
+  id          String   @id @default(uuid())
+  userId      String
+  exerciseId  String
+  metric      PrMetric
+  value       Float
+  achievedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exerciseId, metric])
+  @@index([userId])
+}
