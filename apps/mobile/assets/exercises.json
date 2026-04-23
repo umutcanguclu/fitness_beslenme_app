@@ -1,0 +1,50 @@
+[
+  {
+    "id": "bench-press-barbell",
+    "nameEn": "Barbell Bench Press",
+    "nameTr": "Barbell Bench Press",
+    "muscleGroup": ["chest", "triceps", "shoulders"],
+    "equipment": ["barbell"],
+    "type": "strength"
+  },
+  {
+    "id": "squat-barbell",
+    "nameEn": "Barbell Back Squat",
+    "nameTr": "Barbell Squat",
+    "muscleGroup": ["quads", "glutes", "hamstrings"],
+    "equipment": ["barbell"],
+    "type": "strength"
+  },
+  {
+    "id": "deadlift-conventional",
+    "nameEn": "Conventional Deadlift",
+    "nameTr": "Klasik Deadlift",
+    "muscleGroup": ["back", "hamstrings", "glutes"],
+    "equipment": ["barbell"],
+    "type": "strength"
+  },
+  {
+    "id": "overhead-press-barbell",
+    "nameEn": "Overhead Press",
+    "nameTr": "Omuz Pres (Barbell)",
+    "muscleGroup": ["shoulders", "triceps"],
+    "equipment": ["barbell"],
+    "type": "strength"
+  },
+  {
+    "id": "pull-up",
+    "nameEn": "Pull-up",
+    "nameTr": "Barfiks",
+    "muscleGroup": ["back", "biceps"],
+    "equipment": ["bodyweight"],
+    "type": "strength"
+  },
+  {
+    "id": "running-outdoor",
+    "nameEn": "Outdoor Running",
+    "nameTr": "Açık Hava Koşu",
+    "muscleGroup": ["cardio"],
+    "equipment": ["bodyweight"],
+    "type": "cardio"
+  }
+]

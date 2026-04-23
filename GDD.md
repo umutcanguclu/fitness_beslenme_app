@@ -68,15 +68,15 @@ Persona: Haftada 3-5 gün antrenman yapan, ölçülebilir ilerleme isteyen, Tür
 ## 5. Teknik Mimari
 
 ### Frontend (Mobile)
-- React Native + Expo (SDK 54+)
-- Expo Router (file-based)
-- NativeWind (Tailwind for RN)
-- Zustand (state)
-- TanStack Query (server state + cache)
-- React Hook Form + Zod (form + validation)
-- Victory Native / gifted-charts (grafikler)
-- i18next + expo-localization (çok dil)
-- MMKV (local storage, AsyncStorage yerine)
+- Flutter 3.41+ · Dart 3.11+
+- Material 3 tema + özel `ThemeExtension` (koyu tema, lime accent)
+- Riverpod 2 (state + DI)
+- go_router (navigasyon + deep link)
+- dio (HTTP + auth interceptor)
+- freezed + json_serializable (immutable modeller + JSON)
+- flutter_localizations + intl + ARB (çok dil)
+- flutter_secure_storage (token) + shared_preferences (ayarlar)
+- fl_chart (grafikler)
 
 ### Backend (API)
 - Node.js (v20+) + Fastify + TypeScript
@@ -87,14 +87,15 @@ Persona: Haftada 3-5 gün antrenman yapan, ölçülebilir ilerleme isteyen, Tür
 - PM2 (deploy, Google Cloud e2-micro)
 
 ### Paylaşımlı
-- pnpm workspaces (monorepo)
-- `packages/shared` — Zod şemaları, TS tipleri, i18n anahtarları
-- `packages/exercise-db` — statik egzersiz JSON'u
+- pnpm workspaces (backend + paketler)
+- `packages/shared` — Zod şemaları, TS tipleri (backend tarafı için kaynak)
+- `packages/exercise-db` — statik egzersiz JSON'u (mobile tarafta asset olarak kopyalanır)
+- Mobile tarafında Dart model eşdeğerleri `freezed` ile elle tutulur (tek cross-language maliyeti)
 
 ### Deployment
 - Backend: Google Cloud Compute Engine e2-micro + PM2 + nginx
 - DB: PostgreSQL (aynı instance'da başlangıç, büyürse managed)
-- Mobil: Expo EAS (development build + store submission)
+- Mobil: `flutter build apk` / `flutter build appbundle` (Android), `flutter build ipa` (iOS, macOS üzerinde Xcode ile)
 
 ## 6. Veri Modeli (taslak)
 
@@ -113,7 +114,7 @@ CardioSession { id, userId, type, distance, duration, route[], startedAt }
 
 **Tema:** Koyu tema birincil (dark-first), light tema sonradan. Accent renk kullanıcı seçimli (default: electric lime / cyberpunk teal — Temreon Studio estetiğine yakın).
 
-**Font:** Inter (gövde) + Barlow Condensed (başlık) — modern, okunaklı, cyberpunk estetiğinin "daha olgun" versiyonu.
+**Font:** Inter (gövde) + Barlow Condensed (başlık) — modern, okunaklı, cyberpunk estetiğinin "daha olgun" versiyonu. Flutter tarafında `google_fonts` paketiyle yüklenir.
 
 **Temel ekranlar:**
 1. Dashboard (bugün + son 7 gün özet)
@@ -133,5 +134,5 @@ CardioSession { id, userId, type, distance, duration, route[], startedAt }
 ## 9. Riskler
 
 - **Scope creep**: "Hepsi bir arada" isteği. Karşı önlem: Faz'lara sıkı sıkıya sadık kal, Faz 1 bitmeden Faz 2'ye geçme.
-- **Mobil deployment karmaşıklığı**: Expo EAS build süreçleri, sertifikalar. Karşı önlem: Development build ile başla, store submission sonraya.
+- **Mobil deployment karmaşıklığı**: iOS build için macOS + Xcode gerekiyor. Karşı önlem: Android'i öncelikle, iOS build'i macOS erişimi olduğunda ele al.
 - **Backend + mobil paralel geliştirme yükü**: Tek kişi. Karşı önlem: Backend önce bitsin, mock data ile mobil geliştir.

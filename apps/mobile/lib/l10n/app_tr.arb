@@ -1,0 +1,22 @@
+{
+  "@@locale": "tr",
+  "appName": "FitTrack",
+  "appTagline": "Çalış. Takip et. Aş.",
+  "actionSave": "Kaydet",
+  "actionCancel": "İptal",
+  "actionDelete": "Sil",
+  "actionEdit": "Düzenle",
+  "actionDone": "Bitti",
+  "actionRetry": "Tekrar dene",
+  "actionBack": "Geri",
+  "commonLoading": "Yükleniyor…",
+  "tabDashboard": "Panel",
+  "tabWorkouts": "Antrenmanlar",
+  "tabExercises": "Egzersizler",
+  "tabProgress": "İlerleme",
+  "tabProfile": "Profil",
+  "dashboardWelcome": "Tekrar hoş geldin",
+  "dashboardThisWeek": "Bu hafta",
+  "dashboardNoData": "Henüz kaydedilmiş antrenman yok. İlk seansına başla.",
+  "localeToggleLabel": "Dil"
+}

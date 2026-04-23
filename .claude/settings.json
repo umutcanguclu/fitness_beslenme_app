@@ -8,7 +8,14 @@
       "Bash(git init *)",
       "Bash(git config *)",
       "Bash(pnpm install *)",
-      "Bash(pnpm --filter @fittrack/api db:generate)"
+      "Bash(pnpm --filter @fittrack/api db:generate)",
+      "Bash(pnpm typecheck *)",
+      "Bash(flutter --version)",
+      "Bash(dart --version)",
+      "Bash(flutter create *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter gen-l10n *)",
+      "Bash(flutter analyze *)"
     ]
   }
 }

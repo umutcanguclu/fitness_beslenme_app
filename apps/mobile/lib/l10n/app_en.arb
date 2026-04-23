@@ -1,0 +1,22 @@
+{
+  "@@locale": "en",
+  "appName": "FitTrack",
+  "appTagline": "Train. Track. Transcend.",
+  "actionSave": "Save",
+  "actionCancel": "Cancel",
+  "actionDelete": "Delete",
+  "actionEdit": "Edit",
+  "actionDone": "Done",
+  "actionRetry": "Retry",
+  "actionBack": "Back",
+  "commonLoading": "Loading…",
+  "tabDashboard": "Dashboard",
+  "tabWorkouts": "Workouts",
+  "tabExercises": "Exercises",
+  "tabProgress": "Progress",
+  "tabProfile": "Profile",
+  "dashboardWelcome": "Welcome back",
+  "dashboardThisWeek": "This week",
+  "dashboardNoData": "No workouts logged yet. Start your first session.",
+  "localeToggleLabel": "Language"
+}

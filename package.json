@@ -9,7 +9,11 @@
   },
   "scripts": {
     "dev:api": "pnpm --filter @fittrack/api dev",
-    "dev:mobile": "pnpm --filter @fittrack/mobile start",
+    "dev:mobile": "cd apps/mobile && flutter run",
+    "mobile:analyze": "cd apps/mobile && flutter analyze",
+    "mobile:format": "cd apps/mobile && dart format lib test",
+    "mobile:l10n": "cd apps/mobile && flutter gen-l10n",
+    "mobile:build:android": "cd apps/mobile && flutter build apk",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
