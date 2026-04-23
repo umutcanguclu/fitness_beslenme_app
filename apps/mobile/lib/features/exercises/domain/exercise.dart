@@ -11,6 +11,10 @@ class Exercise {
     required this.muscleGroup,
     required this.equipment,
     required this.type,
+    this.level,
+    this.mechanic,
+    this.images = const [],
+    this.instructionsEn,
   });
 
   final String id;
@@ -19,8 +23,14 @@ class Exercise {
   final List<String> muscleGroup;
   final List<String> equipment;
   final String type;
+  final String? level;
+  final String? mechanic;
+  final List<String> images;
+  final String? instructionsEn;
 
   String nameFor(String languageCode) => languageCode == 'tr' ? nameTr : nameEn;
+
+  String? get primaryImage => images.isEmpty ? null : images.first;
 
   factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
         id: json['id'] as String,
@@ -33,6 +43,12 @@ class Exercise {
             .map((e) => e as String)
             .toList(),
         type: (json['type'] as String?) ?? 'strength',
+        level: json['level'] as String?,
+        mechanic: json['mechanic'] as String?,
+        images: (json['images'] as List<dynamic>? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        instructionsEn: json['instructionsEn'] as String?,
       );
 }
 

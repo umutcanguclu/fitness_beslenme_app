@@ -10,6 +10,8 @@ import '../../../core/theme/fittrack_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_state.dart';
+import '../../programs/data/program_repository.dart';
+import '../../programs/domain/program.dart';
 import '../../workouts/application/workouts_controller.dart';
 import '../../workouts/data/workout_repository.dart';
 import '../../workouts/domain/workout.dart';
@@ -24,6 +26,7 @@ class HomeScreen extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final authState = ref.watch(authControllerProvider).valueOrNull;
     final history = ref.watch(workoutHistoryProvider);
+    final activeProgram = ref.watch(activeProgramProvider);
     final userName = authState is AuthAuthenticated ? authState.user.name : '';
 
     return Scaffold(
@@ -56,6 +59,8 @@ class HomeScreen extends ConsumerWidget {
                   style: textTheme.headlineMedium?.copyWith(color: colors.textPrimary),
                 ),
               ),
+              const SizedBox(height: 16),
+              _ProgramCard(activeProgram: activeProgram),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -125,6 +130,117 @@ class HomeScreen extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _ProgramCard extends StatelessWidget {
+  const _ProgramCard({required this.activeProgram});
+
+  final AsyncValue<Program?> activeProgram;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return activeProgram.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (program) {
+        if (program == null) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => context.go(AppRoute.programWizard),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [colors.primary.withValues(alpha: 0.15), colors.surface],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: colors.border),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: colors.primary, size: 28),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('İdman programı oluştur',
+                              style: textTheme.titleMedium
+                                  ?.copyWith(color: colors.textPrimary)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Hedeflerine göre uygulama senin için hazırlasın',
+                            style: TextStyle(color: colors.textMuted, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: colors.textMuted),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => context.go('${AppRoute.programDetailBase}/${program.id}'),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.fitness_center, color: colors.primary),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Aktif Program',
+                            style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                        const SizedBox(height: 2),
+                        Text(
+                          program.name,
+                          style: textTheme.titleMedium
+                              ?.copyWith(color: colors.textPrimary),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${program.daysPerWeek} gün/hafta · ${program.sessionMinutes} dk',
+                          style: TextStyle(color: colors.textMuted, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: colors.textMuted),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

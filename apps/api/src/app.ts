@@ -8,6 +8,7 @@ import authPlugin from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
 import { authRoutes } from './routes/auth.js';
 import { workoutRoutes } from './routes/workouts.js';
+import { programRoutes } from './routes/programs.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -25,6 +26,19 @@ export async function buildApp(): Promise<FastifyInstance> {
     origin: env.CORS_ORIGINS === '*' ? true : env.CORS_ORIGINS.split(',').map((s) => s.trim()),
     credentials: true,
   });
+
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, body, done) => {
+    const raw = (body as string).trim();
+    if (raw.length === 0) return done(null, undefined);
+    try {
+      done(null, JSON.parse(raw));
+    } catch (err) {
+      const parseError = err as Error & { statusCode?: number };
+      parseError.statusCode = 400;
+      done(parseError, undefined);
+    }
+  });
+
   await app.register(authPlugin);
 
   app.setErrorHandler((error, request, reply) => {
@@ -42,6 +56,11 @@ export async function buildApp(): Promise<FastifyInstance> {
         },
       });
     }
+    if (typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500) {
+      return reply.code(error.statusCode).send({
+        error: { code: error.code ?? 'BAD_REQUEST', message: error.message },
+      });
+    }
     request.log.error({ err: error }, 'unhandled error');
     return reply.code(500).send({
       error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
@@ -57,6 +76,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(authRoutes);
   await app.register(workoutRoutes);
+  await app.register(programRoutes);
 
   return app;
 }

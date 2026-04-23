@@ -23,6 +23,38 @@ class _ExercisePickerSheet extends ConsumerStatefulWidget {
   ConsumerState<_ExercisePickerSheet> createState() => _ExercisePickerSheetState();
 }
 
+class _ExerciseThumb extends StatelessWidget {
+  const _ExerciseThumb({required this.url});
+
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    return Container(
+      width: 48,
+      height: 48,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: url == null
+          ? Icon(Icons.fitness_center, color: colors.textMuted, size: 20)
+          : Image.network(
+              url!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  Icon(Icons.fitness_center, color: colors.textMuted, size: 20),
+              loadingBuilder: (context, child, progress) =>
+                  progress == null ? child : const Center(child: SizedBox(
+                    width: 16, height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))),
+            ),
+    );
+  }
+}
+
 class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
   String _query = '';
 
@@ -95,6 +127,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                       itemBuilder: (context, index) {
                         final exercise = filtered[index];
                         return ListTile(
+                          leading: _ExerciseThumb(url: exercise.primaryImage),
                           title: Text(exercise.nameFor(locale)),
                           subtitle: Text(
                             exercise.muscleGroup.join(' · '),

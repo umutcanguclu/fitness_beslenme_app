@@ -23,6 +23,9 @@ importers:
       '@fastify/helmet':
         specifier: ^12.0.1
         version: 12.0.1
+      '@fittrack/exercise-db':
+        specifier: workspace:*
+        version: link:../../packages/exercise-db
       '@fittrack/shared':
         specifier: workspace:*
         version: link:../../packages/shared
