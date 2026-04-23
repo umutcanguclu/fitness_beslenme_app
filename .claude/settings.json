@@ -15,7 +15,9 @@
       "Bash(flutter create *)",
       "Bash(flutter pub *)",
       "Bash(flutter gen-l10n *)",
-      "Bash(flutter analyze *)"
+      "Bash(flutter analyze *)",
+      "Read(//c/Program Files/Java//**)",
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java.exe\" -version)"
     ]
   }
 }
