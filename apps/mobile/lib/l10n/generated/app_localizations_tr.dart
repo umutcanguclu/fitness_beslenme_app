@@ -65,4 +65,127 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get localeToggleLabel => 'Dil';
+
+  @override
+  String get authSignInTitle => 'Giriş yap';
+
+  @override
+  String get authSignInSubtitle =>
+      'Tekrar hoş geldin. Kaldığın yerden devam edelim.';
+
+  @override
+  String get authSignUpTitle => 'Hesap oluştur';
+
+  @override
+  String get authSignUpSubtitle =>
+      'Antrenmanlarını bugünden takip etmeye başla.';
+
+  @override
+  String get authEmailLabel => 'E-posta';
+
+  @override
+  String get authPasswordLabel => 'Şifre';
+
+  @override
+  String get authNameLabel => 'Ad';
+
+  @override
+  String get authSignInAction => 'Giriş yap';
+
+  @override
+  String get authSignUpAction => 'Hesap oluştur';
+
+  @override
+  String get authNoAccountPrompt => 'Henüz hesabın yok mu?';
+
+  @override
+  String get authHaveAccountPrompt => 'Zaten hesabın var mı?';
+
+  @override
+  String get authSignOut => 'Çıkış yap';
+
+  @override
+  String get authErrorInvalidEmail => 'Geçerli bir e-posta adresi gir.';
+
+  @override
+  String get authErrorPasswordTooShort => 'Şifre en az 8 karakter olmalı.';
+
+  @override
+  String get authErrorNameRequired => 'Adını gir.';
+
+  @override
+  String get authErrorInvalidCredentials => 'E-posta veya şifre hatalı.';
+
+  @override
+  String get authErrorEmailTaken => 'Bu e-posta zaten kayıtlı.';
+
+  @override
+  String get authErrorNetwork => 'Ağ hatası. Lütfen tekrar dene.';
+
+  @override
+  String get authErrorGeneric => 'Bir şeyler ters gitti. Lütfen tekrar dene.';
+
+  @override
+  String get workoutStartAction => 'Antrenman başlat';
+
+  @override
+  String get workoutHistoryTitle => 'Geçmiş';
+
+  @override
+  String get workoutHistoryEmpty => 'Henüz antrenman yok. İlk seansını başlat.';
+
+  @override
+  String get workoutActiveTitle => 'Aktif antrenman';
+
+  @override
+  String get workoutUntitled => 'İsimsiz antrenman';
+
+  @override
+  String get workoutInProgress => 'Devam ediyor';
+
+  @override
+  String get workoutFinish => 'Antrenmanı bitir';
+
+  @override
+  String get workoutFinished => 'Tamamlandı';
+
+  @override
+  String get workoutAddSet => 'Set ekle';
+
+  @override
+  String get workoutNoSets => 'Henüz set kaydı yok.';
+
+  @override
+  String get workoutExerciseLabel => 'Egzersiz';
+
+  @override
+  String get workoutWeightLabel => 'Ağırlık (kg)';
+
+  @override
+  String get workoutRepsLabel => 'Tekrar';
+
+  @override
+  String get workoutTimeLabel => 'Süre (sn)';
+
+  @override
+  String get workoutDistanceLabel => 'Mesafe (m)';
+
+  @override
+  String get workoutRpeLabel => 'RPE';
+
+  @override
+  String get workoutPickExercise => 'Egzersiz seç';
+
+  @override
+  String get workoutSearchExercise => 'Egzersiz ara';
+
+  @override
+  String get workoutErrorSetIncomplete =>
+      'En az ağırlık/tekrar, süre veya mesafe gir.';
+
+  @override
+  String get workoutDeleteConfirm => 'Bu antrenmanı silmek istiyor musun?';
+
+  @override
+  String get workoutDeleteConfirmBody => 'Bu işlem geri alınamaz.';
 }

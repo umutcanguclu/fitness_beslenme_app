@@ -2,13 +2,14 @@
   "name": "fittrack",
   "private": true,
   "version": "0.1.0",
-  "description": "FitTrack — a personal fitness tracking monorepo (Expo RN + Fastify + Postgres).",
+  "description": "FitTrack — a personal fitness tracking monorepo (Flutter + Fastify + Postgres).",
   "packageManager": "pnpm@10.33.2",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "dev:api": "pnpm --filter @fittrack/api dev",
+    "exercises:sync": "pnpm --filter @fittrack/exercise-db sync && node -e \"require('fs').copyFileSync('packages/exercise-db/src/exercises.json','apps/mobile/assets/exercises.json')\"",
     "dev:mobile": "cd apps/mobile && flutter run",
     "mobile:analyze": "cd apps/mobile && flutter analyze",
     "mobile:format": "cd apps/mobile && dart format lib test",
@@ -17,6 +18,8 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
+    "test:api": "pnpm --filter @fittrack/api test",
+    "test:mobile": "cd apps/mobile && flutter test",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\""
   },

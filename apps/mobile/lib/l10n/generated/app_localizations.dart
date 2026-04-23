@@ -211,6 +211,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get localeToggleLabel;
+
+  /// No description provided for @authSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authSignInTitle;
+
+  /// No description provided for @authSignInSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back. Let\'s pick up where you left off.'**
+  String get authSignInSubtitle;
+
+  /// No description provided for @authSignUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authSignUpTitle;
+
+  /// No description provided for @authSignUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking your training today.'**
+  String get authSignUpSubtitle;
+
+  /// No description provided for @authEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get authEmailLabel;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get authNameLabel;
+
+  /// No description provided for @authSignInAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authSignInAction;
+
+  /// No description provided for @authSignUpAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authSignUpAction;
+
+  /// No description provided for @authNoAccountPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'No account yet?'**
+  String get authNoAccountPrompt;
+
+  /// No description provided for @authHaveAccountPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authHaveAccountPrompt;
+
+  /// No description provided for @authSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get authSignOut;
+
+  /// No description provided for @authErrorInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get authErrorInvalidEmail;
+
+  /// No description provided for @authErrorPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters.'**
+  String get authErrorPasswordTooShort;
+
+  /// No description provided for @authErrorNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name.'**
+  String get authErrorNameRequired;
+
+  /// No description provided for @authErrorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get authErrorInvalidCredentials;
+
+  /// No description provided for @authErrorEmailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
+  String get authErrorEmailTaken;
+
+  /// No description provided for @authErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please try again.'**
+  String get authErrorNetwork;
+
+  /// No description provided for @authErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get authErrorGeneric;
+
+  /// No description provided for @workoutStartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start workout'**
+  String get workoutStartAction;
+
+  /// No description provided for @workoutHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get workoutHistoryTitle;
+
+  /// No description provided for @workoutHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No past workouts yet. Tap below to start your first.'**
+  String get workoutHistoryEmpty;
+
+  /// No description provided for @workoutActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active workout'**
+  String get workoutActiveTitle;
+
+  /// No description provided for @workoutUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled workout'**
+  String get workoutUntitled;
+
+  /// No description provided for @workoutInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get workoutInProgress;
+
+  /// No description provided for @workoutFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish workout'**
+  String get workoutFinish;
+
+  /// No description provided for @workoutFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get workoutFinished;
+
+  /// No description provided for @workoutAddSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add set'**
+  String get workoutAddSet;
+
+  /// No description provided for @workoutNoSets.
+  ///
+  /// In en, this message translates to:
+  /// **'No sets logged yet.'**
+  String get workoutNoSets;
+
+  /// No description provided for @workoutExerciseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get workoutExerciseLabel;
+
+  /// No description provided for @workoutWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get workoutWeightLabel;
+
+  /// No description provided for @workoutRepsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reps'**
+  String get workoutRepsLabel;
+
+  /// No description provided for @workoutTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time (s)'**
+  String get workoutTimeLabel;
+
+  /// No description provided for @workoutDistanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (m)'**
+  String get workoutDistanceLabel;
+
+  /// No description provided for @workoutRpeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'RPE'**
+  String get workoutRpeLabel;
+
+  /// No description provided for @workoutPickExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an exercise'**
+  String get workoutPickExercise;
+
+  /// No description provided for @workoutSearchExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Search exercises'**
+  String get workoutSearchExercise;
+
+  /// No description provided for @workoutErrorSetIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Record at least weight/reps, time, or distance.'**
+  String get workoutErrorSetIncomplete;
+
+  /// No description provided for @workoutDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this workout?'**
+  String get workoutDeleteConfirm;
+
+  /// No description provided for @workoutDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get workoutDeleteConfirmBody;
 }
 
 class _AppLocalizationsDelegate

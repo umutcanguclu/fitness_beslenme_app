@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(psql --version)",
+      "Bash(export PATH=\"$PATH:/c/Users/umutc/dev/flutter/bin\")",
+      "Bash(\"/c/Program Files/PostgreSQL/17/bin/initdb.exe\" -D \"C:\\\\Users\\\\umutc\\\\dev\\\\pgdata\" -U postgres --pwfile=\"C:\\\\Users\\\\umutc\\\\dev\\\\pgpw.txt\" -E UTF8 --locale=C)",
+      "Bash(\"/c/Program Files/PostgreSQL/17/bin/pg_ctl.exe\" -D \"C:\\\\Users\\\\umutc\\\\dev\\\\pgdata\" -l \"C:\\\\Users\\\\umutc\\\\dev\\\\pg.log\" start)",
+      "Bash(\"/c/Program Files/PostgreSQL/17/bin/pg_ctl.exe\" -D \"C:\\\\Users\\\\umutc\\\\dev\\\\pgdata\" status)",
+      "Bash(PGPASSWORD=fittrack_dev_2026 \"/c/Program Files/PostgreSQL/17/bin/createdb.exe\" -U postgres -h localhost fittrack)",
+      "Bash(PGPASSWORD=fittrack_dev_2026 \"/c/Program Files/PostgreSQL/17/bin/psql.exe\" -U postgres -h localhost -c \"\\\\\\\\l\")",
+      "Bash(pnpm --filter @fittrack/api db:push)",
+      "Bash(pnpm --filter @fittrack/api typecheck)",
+      "Bash(flutter doctor *)",
+      "Bash(yes)",
+      "Bash(pnpm --filter @fittrack/api add jsonwebtoken)",
+      "Bash(pnpm --filter @fittrack/api add -D @types/jsonwebtoken)",
+      "Bash(pnpm --filter @fittrack/api add fastify-plugin)",
+      "Bash(pnpm --filter @fittrack/api remove @fastify/jwt)",
+      "Bash(pnpm dev:api)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s -X POST http://localhost:3000/auth/register -H \"Content-Type: application/json\" -d '{\"email\":\"test@example.com\",\"password\":\"testpass123\",\"name\":\"Test User\"}')",
+      "Bash(curl *)",
+      "Bash(pnpm --filter @fittrack/exercise-db sync)",
+      "Bash(pnpm --filter @fittrack/exercise-db typecheck)",
+      "Bash(node --input-type=module -e \"const mod = await import\\('./packages/exercise-db/src/index.ts'\\).catch\\(e => { console.error\\(e\\); process.exit\\(1\\) }\\); console.log\\('exercises count:', mod.exercises?.length ?? 'n/a'\\)\")",
+      "Bash(pnpm --filter @fittrack/exercise-db exec tsx --eval \"import\\('./src/index.ts'\\).then\\(m => console.log\\('exercises count:', m.exercises.length\\)\\)\")",
+      "Bash(pnpm --filter @fittrack/api test)",
+      "Bash(node -e \"import\\('dotenv'\\).then\\(d => { d.config\\(\\); console.log\\('NODE_ENV:', process.env.NODE_ENV, 'JWT_SECRET len:', process.env.JWT_SECRET?.length\\) }\\)\")",
+      "Bash(node --import tsx -e \"process.env.NODE_ENV='test'; process.env.DATABASE_URL='postgresql://x:y@z:5432/db'; process.env.JWT_SECRET='x'.repeat\\(20\\); process.env.JWT_REFRESH_SECRET='y'.repeat\\(20\\); const m = await import\\('./src/lib/env.ts'\\); console.log\\('ok', m.env.NODE_ENV\\)\")",
+      "Bash(flutter test *)"
+    ]
+  }
+}

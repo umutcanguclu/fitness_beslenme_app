@@ -1,11 +1,13 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import jwt from '@fastify/jwt';
 import { ZodError } from 'zod';
 import { env } from './lib/env.js';
 import { AppError } from './lib/errors.js';
+import authPlugin from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
+import { authRoutes } from './routes/auth.js';
+import { workoutRoutes } from './routes/workouts.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -23,7 +25,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     origin: env.CORS_ORIGINS === '*' ? true : env.CORS_ORIGINS.split(',').map((s) => s.trim()),
     credentials: true,
   });
-  await app.register(jwt, { secret: env.JWT_SECRET });
+  await app.register(authPlugin);
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof AppError) {
@@ -53,6 +55,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(healthRoutes);
+  await app.register(authRoutes);
+  await app.register(workoutRoutes);
 
   return app;
 }

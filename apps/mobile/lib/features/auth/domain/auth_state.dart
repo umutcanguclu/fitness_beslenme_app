@@ -29,10 +29,6 @@ class AuthInitial extends AuthState {
   const AuthInitial();
 }
 
-class AuthLoading extends AuthState {
-  const AuthLoading();
-}
-
 class AuthAuthenticated extends AuthState {
   const AuthAuthenticated(this.user);
   final AuthUser user;
