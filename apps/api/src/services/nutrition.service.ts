@@ -119,7 +119,10 @@ function pickTemplate(
 }
 
 function randomPick<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  if (arr.length === 0) {
+    throw new Error('randomPick called on empty array');
+  }
+  return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
 function roundGrams(grams: number, increment = 5): number {
@@ -193,7 +196,7 @@ function buildMealFromTemplate(
         carbsG: +(topUp.carbsG * scale).toFixed(1),
         fatG: +(topUp.fatG * scale).toFixed(1),
       });
-      const last = items[items.length - 1];
+      const last = items[items.length - 1]!;
       kcal += last.kcal;
       proteinG += last.proteinG;
       carbsG += last.carbsG;

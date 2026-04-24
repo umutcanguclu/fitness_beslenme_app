@@ -124,7 +124,7 @@ function pickForSlot(
       equipmentOk(allowedEquipment, ex) &&
       !globalUsed.has(ex.id),
   );
-  if (fallbackPool.length > 0) return fallbackPool[0];
+  if (fallbackPool.length > 0) return fallbackPool[0]!;
 
   // Last-resort: relax the "no reuse" rule for tiny pools (e.g. bodyweight
   // pull has very few options). Still honor equipment + level.
@@ -146,6 +146,9 @@ function buildDay(
   globalUsed: Set<string>,
 ): { name: string; picks: { slot: SessionSlot; ex: CuratedExercise }[] } {
   const template = SESSION_TEMPLATES[templateKey] ?? SESSION_TEMPLATES.full_a;
+  if (!template) {
+    throw new Error(`Unknown session template: ${templateKey}`);
+  }
   const picks: { slot: SessionSlot; ex: CuratedExercise }[] = [];
 
   for (const slot of template.slots) {
@@ -226,13 +229,17 @@ function pickSplit(
   requestedPrimaries: Set<PrimaryMuscle>,
 ): Split {
   const options = SPLITS[daysPerWeek] ?? SPLITS[3];
-  if (options.length === 1) return options[0];
+  if (!options || options.length === 0) {
+    throw new Error(`No split defined for ${daysPerWeek} days/week`);
+  }
+  const first = options[0]!;
+  if (options.length === 1) return first;
 
   // Pick the split whose union of template-required muscles best matches
   // what the user asked for. Full-body splits win when user requests many
   // muscle groups but few days; split routines win when many days exist.
   let bestScore = -1;
-  let best = options[0];
+  let best: Split = first;
   for (const opt of options) {
     const hit = new Set<PrimaryMuscle>();
     for (const dayKey of opt.days) {

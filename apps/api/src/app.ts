@@ -57,9 +57,17 @@ export async function buildApp(): Promise<FastifyInstance> {
         },
       });
     }
-    if (typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500) {
-      return reply.code(error.statusCode).send({
-        error: { code: error.code ?? 'BAD_REQUEST', message: error.message },
+    const httpError = error as Error & { statusCode?: number; code?: string };
+    if (
+      typeof httpError.statusCode === 'number' &&
+      httpError.statusCode >= 400 &&
+      httpError.statusCode < 500
+    ) {
+      return reply.code(httpError.statusCode).send({
+        error: {
+          code: httpError.code ?? 'BAD_REQUEST',
+          message: httpError.message,
+        },
       });
     }
     request.log.error({ err: error }, 'unhandled error');
