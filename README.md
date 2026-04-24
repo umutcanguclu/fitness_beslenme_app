@@ -4,7 +4,6 @@ Kişisel fitness takip uygulaması. Flutter mobile + Fastify/PostgreSQL backend.
 
 > Vizyon, kapsam ve roadmap için [GDD.md](./GDD.md).
 > Agent çalışma kuralları için [CONTEXT.md](./CONTEXT.md).
-> Kurulum adımları için [KURULUM.md](./KURULUM.md).
 
 ## Mimari
 
@@ -141,4 +140,3 @@ apps/mobile/
 
 - [GDD.md](./GDD.md) — vizyon, kapsam, faz planı
 - [CONTEXT.md](./CONTEXT.md) — agent ve geliştirme kuralları
-- [KURULUM.md](./KURULUM.md) — detaylı kurulum ve prompt örnekleri

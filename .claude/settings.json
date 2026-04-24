@@ -17,7 +17,16 @@
       "Bash(flutter gen-l10n *)",
       "Bash(flutter analyze *)",
       "Read(//c/Program Files/Java//**)",
-      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java.exe\" -version)"
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java.exe\" -version)",
+      "Bash(emulator -list-avds)",
+      "Bash(adb devices *)",
+      "Bash(adb -s emulator-5554 shell getprop sys.boot_completed)",
+      "Bash(export PATH=\"$PATH:/c/Users/GarroshCan/AppData/Local/Android/Sdk/emulator:/c/Users/GarroshCan/AppData/Local/Android/Sdk/platform-tools\")",
+      "Bash(tasklist //FI \"IMAGENAME eq qemu-system-x86_64.exe\")",
+      "Bash(tasklist //FI \"IMAGENAME eq emulator.exe\")",
+      "Bash(tasklist //FI \"IMAGENAME eq qemu-system-aarch64.exe\")",
+      "Bash(git -C /d/fitness_beslenme_app ls-files apps/mobile/fittrack.iml apps/mobile/devtools_options.yaml logs/)",
+      "Bash(git -C /d/fitness_beslenme_app status --short)"
     ]
   }
 }
