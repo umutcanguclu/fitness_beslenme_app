@@ -22,11 +22,13 @@ export type NutritionGenerateInput = z.infer<typeof NutritionGenerateInputSchema
 
 export const MealItemSchema = z.object({
   foodId: z.string(),
-  grams: z.number().int().min(1),
+  grams: z.number().int().min(0),
   kcal: z.number().int(),
   proteinG: z.number(),
   carbsG: z.number(),
   fatG: z.number(),
+  /** Human-readable portion label when the item comes from a recipe (e.g. "1 su bardağı"). */
+  label: z.string().optional(),
 });
 export type MealItem = z.infer<typeof MealItemSchema>;
 
@@ -39,6 +41,11 @@ export const MealSchema = z.object({
   proteinG: z.number(),
   carbsG: z.number(),
   fatG: z.number(),
+  /** When a meal is recipe-based, clients can open its recipe. */
+  recipeId: z.string().nullable().optional(),
+  recipeNameTr: z.string().nullable().optional(),
+  /** Portion multiplier applied to the recipe to hit the slot target. */
+  servings: z.number().positive().nullable().optional(),
 });
 export type Meal = z.infer<typeof MealSchema>;
 

@@ -66,6 +66,8 @@ class HomeScreen extends ConsumerWidget {
               _ProgramCard(activeProgram: activeProgram),
               const SizedBox(height: 12),
               _NutritionCard(activeNutrition: activeNutrition),
+              const SizedBox(height: 12),
+              const _RecipesCard(),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -389,6 +391,73 @@ class _NutritionCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _RecipesCard extends StatelessWidget {
+  const _RecipesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.go(AppRoute.recipesBase),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colors.warning.withValues(alpha: 0.18),
+                colors.accent.withValues(alpha: 0.10),
+                colors.surface,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(color: colors.border),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors.warning.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(Icons.menu_book,
+                    color: colors.warning, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Tarifler',
+                        style: textTheme.titleMedium?.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '170+ Türk mutfağı tarifi · Çorba, ana yemek, kahvaltı, hamur işi',
+                      style: TextStyle(color: colors.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: colors.textMuted),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

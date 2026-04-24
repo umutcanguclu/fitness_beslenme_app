@@ -1,5 +1,3 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -304,13 +302,30 @@ class _MealCard extends StatelessWidget {
         _ => Icons.restaurant_menu,
       };
 
+  String _slotLabel(BuildContext context) => switch (meal.key) {
+        'breakfast' => 'Kahvaltı',
+        'snack1' => 'Ara Öğün',
+        'lunch' => 'Öğle',
+        'snack2' => 'İkindi',
+        'dinner' => 'Akşam',
+        _ => meal.name,
+      };
+
+  String _formatServings(double s) =>
+      s == s.truncateToDouble() ? s.toStringAsFixed(0) : s.toStringAsFixed(1);
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final hasRecipe = meal.recipeId != null && meal.recipeId!.isNotEmpty;
+    final body = Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: colors.surface,
-        border: Border.all(color: colors.border),
+        border: Border.all(
+          color: hasRecipe
+              ? colors.accent.withValues(alpha: 0.45)
+              : colors.border,
+        ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -319,14 +334,15 @@ class _MealCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 44,
+                  height: 44,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: colors.accent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(_icon, color: colors.accent),
                 ),
@@ -335,63 +351,140 @@ class _MealCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(meal.name,
-                          style: textTheme.titleMedium?.copyWith(
-                              color: colors.textPrimary,
-                              fontWeight: FontWeight.w700)),
+                      Text(
+                        _slotLabel(context).toUpperCase(),
+                        style: TextStyle(
+                          color: colors.textMuted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text('${meal.kcal} kcal',
-                          style: TextStyle(
+                      Text(
+                        meal.recipeNameTr ?? meal.name,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            '${meal.kcal} kcal',
+                            style: TextStyle(
                               color: colors.accent,
                               fontWeight: FontWeight.w700,
-                              fontSize: 13)),
+                              fontSize: 13,
+                            ),
+                          ),
+                          if (meal.servings != null)
+                            _Pill(
+                              text: '${_formatServings(meal.servings!)} porsiyon',
+                              color: colors.primary,
+                            ),
+                          _Pill(text: 'P ${meal.proteinG.round()}', color: colors.primary),
+                          _Pill(text: 'K ${meal.carbsG.round()}', color: colors.accent),
+                          _Pill(text: 'Y ${meal.fatG.round()}', color: colors.warning),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                _Pill(text: 'P ${meal.proteinG.round()}', color: colors.primary),
-                const SizedBox(width: 4),
-                _Pill(text: 'K ${meal.carbsG.round()}', color: colors.accent),
-                const SizedBox(width: 4),
-                _Pill(text: 'Y ${meal.fatG.round()}', color: colors.warning),
               ],
             ),
           ),
-          Divider(color: colors.border, height: 1),
-          ...meal.items.map((it) {
-            final food = foods[it.foodId];
-            final name = food?.nameTr ?? it.foodId;
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name,
-                            style: TextStyle(
-                                color: colors.textPrimary,
-                                fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 2),
-                        Text('${it.grams} g · ${it.kcal} kcal',
-                            style: TextStyle(
-                                color: colors.textMuted, fontSize: 11)),
-                      ],
+          if (meal.items.isNotEmpty) ...[
+            Divider(color: colors.border, height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Text('Malzemeler',
+                  style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1)),
+            ),
+            ...meal.items.map((it) {
+              final food = foods[it.foodId];
+              final name = food?.nameTr ?? it.foodId;
+              final subtitle = it.label ??
+                  (it.grams > 0 ? '${it.grams} g' : null) ??
+                  '—';
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                          color: colors.accent, shape: BoxShape.circle),
                     ),
-                  ),
-                  Text(
-                    'P${it.proteinG.toStringAsFixed(0)} · K${it.carbsG.toStringAsFixed(0)} · Y${it.fatG.toStringAsFixed(0)}',
-                    style: TextStyle(
-                        color: colors.textDim,
-                        fontSize: 11,
-                        fontFeatures: const [FontFeature.tabularFigures()]),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: TextStyle(
+                            color: colors.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style:
+                          TextStyle(color: colors.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 8),
+          ],
+          if (hasRecipe) ...[
+            Divider(color: colors.border, height: 1),
+            InkWell(
+              onTap: () => context.go('${AppRoute.recipesBase}/${meal.recipeId}'),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(16),
               ),
-            );
-          }),
-          const SizedBox(height: 6),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.menu_book, size: 18, color: colors.accent),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Tarifi Aç',
+                      style: TextStyle(
+                        color: colors.accent,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.arrow_forward, size: 16, color: colors.accent),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+
+    if (!hasRecipe) return body;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.go('${AppRoute.recipesBase}/${meal.recipeId}'),
+        child: body,
       ),
     );
   }

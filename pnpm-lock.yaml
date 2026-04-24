@@ -26,6 +26,9 @@ importers:
       '@fittrack/exercise-db':
         specifier: workspace:*
         version: link:../../packages/exercise-db
+      '@fittrack/recipe-db':
+        specifier: workspace:*
+        version: link:../../packages/recipe-db
       '@fittrack/shared':
         specifier: workspace:*
         version: link:../../packages/shared

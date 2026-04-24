@@ -6,6 +6,7 @@ class MealItem {
     required this.proteinG,
     required this.carbsG,
     required this.fatG,
+    this.label,
   });
 
   final String foodId;
@@ -14,6 +15,7 @@ class MealItem {
   final double proteinG;
   final double carbsG;
   final double fatG;
+  final String? label;
 
   factory MealItem.fromJson(Map<String, dynamic> json) => MealItem(
         foodId: json['foodId'] as String,
@@ -22,6 +24,7 @@ class MealItem {
         proteinG: (json['proteinG'] as num).toDouble(),
         carbsG: (json['carbsG'] as num).toDouble(),
         fatG: (json['fatG'] as num).toDouble(),
+        label: json['label'] as String?,
       );
 }
 
@@ -35,6 +38,9 @@ class Meal {
     required this.carbsG,
     required this.fatG,
     required this.items,
+    this.recipeId,
+    this.recipeNameTr,
+    this.servings,
   });
 
   final String key;
@@ -45,6 +51,9 @@ class Meal {
   final double carbsG;
   final double fatG;
   final List<MealItem> items;
+  final String? recipeId;
+  final String? recipeNameTr;
+  final double? servings;
 
   factory Meal.fromJson(Map<String, dynamic> json) => Meal(
         key: json['key'] as String,
@@ -57,6 +66,9 @@ class Meal {
         items: (json['items'] as List<dynamic>? ?? const [])
             .map((e) => MealItem.fromJson(e as Map<String, dynamic>))
             .toList(),
+        recipeId: json['recipeId'] as String?,
+        recipeNameTr: json['recipeNameTr'] as String?,
+        servings: (json['servings'] as num?)?.toDouble(),
       );
 }
 

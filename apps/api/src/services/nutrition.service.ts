@@ -5,16 +5,12 @@ import type {
   Meal,
   MealItem,
   NutritionGenerateInput,
+  Recipe,
+  RecipeCategory,
 } from '@fittrack/shared';
+import { recipes } from '@fittrack/recipe-db';
 import { AppError } from '../lib/errors.js';
 import { prisma } from '../lib/prisma.js';
-import { FOOD_BY_ID, FOODS, type Food } from '../data/foods.js';
-import {
-  MEAL_TEMPLATES,
-  templatesFor,
-  type MealTemplate,
-  type MealType,
-} from '../data/meal-templates.js';
 
 /* -------------------------------------------------------------------------- */
 /* Energy + macro math                                                        */
@@ -68,13 +64,105 @@ function macroTargets(targetKcal: number, weightKg: number, goal: Goal) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Meal slot spec                                                             */
+/* Recipe classification                                                      */
+/* -------------------------------------------------------------------------- */
+
+type MealSlotType = 'breakfast' | 'snack' | 'lunch' | 'dinner';
+
+/**
+ * Which meal slots each recipe category fits into. Desserts and drinks are
+ * deliberately excluded from auto-generated plans — they show up in the
+ * recipes browser but not in the diet.
+ */
+const CATEGORY_TO_SLOTS: Partial<Record<RecipeCategory, MealSlotType[]>> = {
+  breakfast: ['breakfast'],
+  soup: ['lunch', 'dinner', 'snack'],
+  main_meat: ['lunch', 'dinner'],
+  main_veg: ['lunch', 'dinner'],
+  rice: ['lunch', 'dinner'],
+  pasta: ['lunch', 'dinner'],
+  salad: ['snack', 'lunch'],
+  meze: ['snack'],
+  pastry: ['snack', 'breakfast'],
+  student: ['lunch', 'dinner', 'snack'],
+};
+
+/** Hard-excluded categories (desserts, sugary drinks, too-dense pastries). */
+const EXCLUDED_FOR_PLANS = new Set<RecipeCategory>(['dessert', 'drink']);
+
+function slotsFor(recipe: Recipe): MealSlotType[] {
+  if (EXCLUDED_FOR_PLANS.has(recipe.category)) return [];
+  return CATEGORY_TO_SLOTS[recipe.category] ?? [];
+}
+
+function goalsFor(recipe: Recipe): Goal[] {
+  const kcal = recipe.nutritionPerServing?.kcal ?? 0;
+  const protein = recipe.nutritionPerServing?.proteinG ?? 0;
+  const fat = recipe.nutritionPerServing?.fatG ?? 0;
+
+  const fits: Goal[] = ['maintain', 'general_fitness'];
+
+  // Fat loss: reasonably lean + respectable protein. Excludes pastries and
+  // anything with huge fat load.
+  if (kcal > 0 && kcal <= 500 && protein >= 12 && fat <= 22) {
+    fits.push('lose_fat');
+  }
+  // Muscle gain: calorie-dense or protein-dense. A 520 kcal main with 35g P
+  // is perfect for bulking.
+  if (kcal >= 350 && protein >= 18) {
+    fits.push('gain_muscle');
+  }
+  return fits;
+}
+
+interface ClassifiedRecipe {
+  recipe: Recipe;
+  slots: MealSlotType[];
+  goals: Goal[];
+}
+
+const CLASSIFIED: ClassifiedRecipe[] = recipes
+  .map((r) => ({ recipe: r, slots: slotsFor(r), goals: goalsFor(r) }))
+  .filter((c) => c.slots.length > 0 && c.recipe.nutritionPerServing?.kcal);
+
+function candidateRecipes(
+  slot: MealSlotType,
+  goal: Goal,
+  usedRecipeIds: Set<string>,
+): Recipe[] {
+  const strict = CLASSIFIED.filter(
+    (c) =>
+      c.slots.includes(slot) &&
+      c.goals.includes(goal) &&
+      !usedRecipeIds.has(c.recipe.id),
+  ).map((c) => c.recipe);
+  if (strict.length > 0) return strict;
+
+  // Relax 1: drop the no-reuse rule (small goal pools).
+  const relaxed = CLASSIFIED.filter(
+    (c) => c.slots.includes(slot) && c.goals.includes(goal),
+  ).map((c) => c.recipe);
+  if (relaxed.length > 0) return relaxed;
+
+  // Relax 2: drop the goal filter but keep the slot filter.
+  return CLASSIFIED.filter((c) => c.slots.includes(slot)).map(
+    (c) => c.recipe,
+  );
+}
+
+function randomPick<T>(arr: readonly T[]): T | null {
+  if (arr.length === 0) return null;
+  return arr[Math.floor(Math.random() * arr.length)]!;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Meal composition                                                           */
 /* -------------------------------------------------------------------------- */
 
 interface SlotSpec {
   key: string;
   name: string;
-  type: MealType;
+  type: MealSlotType;
   /** Share of daily kcal for this slot. */
   share: number;
 }
@@ -87,156 +175,76 @@ const SLOTS: SlotSpec[] = [
   { key: 'dinner',    name: 'Akşam',    type: 'dinner',    share: 0.25 },
 ];
 
-/* -------------------------------------------------------------------------- */
-/* Template selection + scaling                                               */
-/* -------------------------------------------------------------------------- */
-
-function pickTemplate(
-  type: MealType,
-  goal: Goal,
-  usedTemplateIds: Set<string>,
-): MealTemplate | null {
-  // Prefer templates matching the exact meal type and goal.
-  const exact = templatesFor(type, goal).filter((t) => !usedTemplateIds.has(t.id));
-  if (exact.length > 0) return randomPick(exact);
-
-  // Lunch/dinner are interchangeable pools — try the sibling type.
-  if (type === 'lunch' || type === 'dinner') {
-    const sibling = type === 'lunch' ? 'dinner' : 'lunch';
-    const siblingPool = MEAL_TEMPLATES.filter(
-      (t) => t.type === sibling && t.goals.includes(goal) && !usedTemplateIds.has(t.id),
-    );
-    if (siblingPool.length > 0) return randomPick(siblingPool);
-  }
-
-  // Still nothing? Drop the "unused" constraint.
-  const any = templatesFor(type, goal);
-  if (any.length > 0) return randomPick(any);
-
-  // Absolute fallback: any template of the right type.
-  const anyType = MEAL_TEMPLATES.filter((t) => t.type === type);
-  return anyType.length > 0 ? randomPick(anyType) : null;
-}
-
-function randomPick<T>(arr: readonly T[]): T {
-  if (arr.length === 0) {
-    throw new Error('randomPick called on empty array');
-  }
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-function roundGrams(grams: number, increment = 5): number {
-  if (grams <= 0) return 0;
-  return Math.max(increment, Math.round(grams / increment) * increment);
-}
-
-function baselineKcal(template: MealTemplate): number {
-  return template.items.reduce((sum, it) => {
-    const food = FOOD_BY_ID.get(it.foodId);
-    if (!food) return sum;
-    return sum + (food.kcal * it.baseG) / 100;
-  }, 0);
-}
-
 /**
- * Scales a template's ingredient portions so total kcal ≈ target. Uniform
- * scalar preserves the recipe's character (tavuk miktarı ile pilav miktarı
- * aynı oranda değişir). Clamped to [0.6, 1.8] to prevent absurd portions.
+ * Rounds servings to whole / half values that humans actually eat. Clamped to
+ * [0.5, 3] so we never tell someone to eat "6 servings of lentil soup".
  */
-function buildMealFromTemplate(
-  template: MealTemplate,
+function roundServings(raw: number): number {
+  const clamped = Math.min(3, Math.max(0.5, raw));
+  return Math.round(clamped * 2) / 2;
+}
+
+function mealFromRecipe(
+  slot: SlotSpec,
+  recipe: Recipe,
   targetKcal: number,
 ): Meal {
-  const baseline = baselineKcal(template);
-  const rawScalar = baseline > 0 ? targetKcal / baseline : 1;
-  const scalar = Math.min(1.8, Math.max(0.6, rawScalar));
+  const perServing = recipe.nutritionPerServing ?? {
+    kcal: targetKcal,
+    proteinG: 0,
+    carbsG: 0,
+    fatG: 0,
+  };
+  const servings = roundServings(targetKcal / (perServing.kcal || 1));
+  const kcal = Math.round((perServing.kcal ?? 0) * servings);
+  const proteinG = +((perServing.proteinG ?? 0) * servings).toFixed(1);
+  const carbsG = +((perServing.carbsG ?? 0) * servings).toFixed(1);
+  const fatG = +((perServing.fatG ?? 0) * servings).toFixed(1);
 
-  const items: MealItem[] = [];
-  let kcal = 0;
-  let proteinG = 0;
-  let carbsG = 0;
-  let fatG = 0;
-
-  for (const it of template.items) {
-    const food = FOOD_BY_ID.get(it.foodId);
-    if (!food) continue;
-    const grams = roundGrams(it.baseG * scalar);
-    const scale = grams / 100;
-    const itemKcal = Math.round(food.kcal * scale);
-    const itemP = +(food.proteinG * scale).toFixed(1);
-    const itemC = +(food.carbsG * scale).toFixed(1);
-    const itemF = +(food.fatG * scale).toFixed(1);
-    items.push({
-      foodId: it.foodId,
-      grams,
-      kcal: itemKcal,
-      proteinG: itemP,
-      carbsG: itemC,
-      fatG: itemF,
-    });
-    kcal += itemKcal;
-    proteinG += itemP;
-    carbsG += itemC;
-    fatG += itemF;
-  }
-
-  // If we hit the clamp ceiling (huge target, small baseline recipe),
-  // top up with an extra grain + protein serving so the meal isn't anemic.
-  const gap = targetKcal - kcal;
-  if (gap > 200 && rawScalar > 1.8) {
-    const topUp = pickTopUp(template, items);
-    if (topUp) {
-      const grams = roundGrams(Math.min((gap / topUp.kcal) * 100, topUp.servingG * 2));
-      const scale = grams / 100;
-      items.push({
-        foodId: topUp.id,
-        grams,
-        kcal: Math.round(topUp.kcal * scale),
-        proteinG: +(topUp.proteinG * scale).toFixed(1),
-        carbsG: +(topUp.carbsG * scale).toFixed(1),
-        fatG: +(topUp.fatG * scale).toFixed(1),
-      });
-      const last = items[items.length - 1]!;
-      kcal += last.kcal;
-      proteinG += last.proteinG;
-      carbsG += last.carbsG;
-      fatG += last.fatG;
-    }
-  }
+  // Expose ingredients as display-only items so the dashboard can preview
+  // what the meal contains without having to fetch the recipe up front.
+  const items: MealItem[] = recipe.ingredients.slice(0, 6).map((ing) => ({
+    foodId: ing.name,
+    grams: Math.round((ing.grams ?? 0) * servings),
+    kcal: 0,
+    proteinG: 0,
+    carbsG: 0,
+    fatG: 0,
+    label: servings === 1
+      ? ing.amount
+      : `${ing.amount} × ${formatServings(servings)}`,
+  }));
 
   return {
-    key: template.id,
-    name: template.nameTr,
+    key: slot.key,
+    name: recipe.nameTr,
     targetKcal,
     items,
-    kcal: Math.round(kcal),
-    proteinG: +proteinG.toFixed(1),
-    carbsG: +carbsG.toFixed(1),
-    fatG: +fatG.toFixed(1),
+    kcal,
+    proteinG,
+    carbsG,
+    fatG,
+    recipeId: recipe.id,
+    recipeNameTr: recipe.nameTr,
+    servings,
   };
 }
 
-function pickTopUp(template: MealTemplate, items: MealItem[]): Food | null {
-  const used = new Set(items.map((i) => i.foodId));
-  const needsProtein = template.type === 'lunch' || template.type === 'dinner';
-  const preferredCat = needsProtein ? 'carb_grain' : 'nut_seed';
-  const food = FOODS.find((f) => f.category === preferredCat && !used.has(f.id));
-  return food ?? null;
+function formatServings(n: number): string {
+  return n === Math.trunc(n) ? `${n}` : n.toFixed(1).replace('.0', '');
 }
 
-/* -------------------------------------------------------------------------- */
-/* Plan assembly                                                              */
-/* -------------------------------------------------------------------------- */
-
 function buildDayPlan(targetKcal: number, goal: Goal): Meal[] {
-  const usedTemplateIds = new Set<string>();
+  const used = new Set<string>();
   return SLOTS.map((slot) => {
-    const template = pickTemplate(slot.type, goal, usedTemplateIds);
-    if (!template) {
+    const pool = candidateRecipes(slot.type, goal, used);
+    const recipe = randomPick(pool);
+    const slotTarget = Math.round(targetKcal * slot.share);
+    if (!recipe) {
       return {
         key: slot.key,
         name: slot.name,
-        targetKcal: Math.round(targetKcal * slot.share),
+        targetKcal: slotTarget,
         items: [],
         kcal: 0,
         proteinG: 0,
@@ -244,14 +252,8 @@ function buildDayPlan(targetKcal: number, goal: Goal): Meal[] {
         fatG: 0,
       } satisfies Meal;
     }
-    usedTemplateIds.add(template.id);
-    const meal = buildMealFromTemplate(
-      template,
-      Math.round(targetKcal * slot.share),
-    );
-    // Override the key/name to the slot's label so the UI maps to icons cleanly
-    // while keeping the template id accessible if we ever need provenance.
-    return { ...meal, key: slot.key, name: `${slot.name} · ${template.nameTr}` };
+    used.add(recipe.id);
+    return mealFromRecipe(slot, recipe, slotTarget);
   });
 }
 
@@ -308,9 +310,7 @@ export class NutritionService {
   }
 
   async getActive(userId: string) {
-    return prisma.nutritionPlan.findFirst({
-      where: { userId, active: true },
-    });
+    return prisma.nutritionPlan.findFirst({ where: { userId, active: true } });
   }
 
   async delete(userId: string, planId: string) {
@@ -324,4 +324,6 @@ export class NutritionService {
 
 export const nutritionService = new NutritionService();
 
-export { FOODS, FOOD_BY_ID };
+// Re-export food catalog for the legacy /nutrition/foods endpoint so older
+// mobile builds keep working. Not used by the new recipe-based generator.
+export { FOODS, FOOD_BY_ID } from '../data/foods.js';
