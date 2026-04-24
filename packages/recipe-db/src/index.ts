@@ -16,6 +16,7 @@ import { desserts } from './seed/desserts.js';
 import { drinks } from './seed/drinks.js';
 import { meze } from './seed/meze.js';
 import { student } from './seed/student.js';
+import { themealdbTurkish } from './seed/external-themealdb.js';
 
 const seeds: Recipe[] = [
   ...soups,
@@ -30,6 +31,7 @@ const seeds: Recipe[] = [
   ...drinks,
   ...meze,
   ...student,
+  ...themealdbTurkish,
 ];
 
 export const recipes: readonly Recipe[] = Object.freeze(

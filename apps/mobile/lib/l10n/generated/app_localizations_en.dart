@@ -189,4 +189,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workoutDeleteConfirmBody => 'This cannot be undone.';
+
+  @override
+  String get recipesTitle => 'Recipes';
+
+  @override
+  String get recipesSearch => 'Search by name, tag, or ingredient';
+
+  @override
+  String get recipesCategoryAll => 'All';
+
+  @override
+  String get recipesEmpty => 'No recipes match your filters.';
+
+  @override
+  String get recipesNotFound => 'Recipe not found.';
+
+  @override
+  String get recipesTime => 'time';
+
+  @override
+  String get recipesServings => 'servings';
+
+  @override
+  String get recipesDifficulty => 'difficulty';
+
+  @override
+  String get recipesDifficultyEasy => 'easy';
+
+  @override
+  String get recipesDifficultyMedium => 'medium';
+
+  @override
+  String get recipesDifficultyHard => 'hard';
+
+  @override
+  String get recipesIngredients => 'Ingredients';
+
+  @override
+  String get recipesSteps => 'Steps';
+
+  @override
+  String get recipesProtein => 'protein';
+
+  @override
+  String get recipesCarbs => 'carbs';
+
+  @override
+  String get recipesFat => 'fat';
+
+  @override
+  String get tabRecipes => 'Recipes';
 }

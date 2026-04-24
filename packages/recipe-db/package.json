@@ -11,7 +11,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "sync": "tsx scripts/fetch-open.ts"
+    "sync": "tsx scripts/fetch-open.ts",
+    "build:json": "tsx scripts/build-json.ts"
   },
   "dependencies": {
     "@fittrack/shared": "workspace:*"

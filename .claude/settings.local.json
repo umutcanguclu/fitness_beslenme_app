@@ -76,7 +76,10 @@
       "PowerShell(Get-CimInstance Win32_Process -Filter \"name='node.exe'\")",
       "Bash(pnpm --filter @fittrack/shared build)",
       "WebFetch(domain:blog.supplementler.com)",
-      "Bash(pnpm --filter @fittrack/recipe-db typecheck)"
+      "Bash(pnpm --filter @fittrack/recipe-db typecheck)",
+      "Bash(pnpm --filter @fittrack/recipe-db exec tsx --eval \"import\\('./src/index.ts'\\).then\\(m => console.log\\('TOTAL RECIPES:', m.recipes.length\\)\\)\")",
+      "Bash(pnpm --filter @fittrack/recipe-db build:json)",
+      "Bash(pnpm --filter @fittrack/recipe-db sync)"
     ]
   }
 }

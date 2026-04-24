@@ -38,6 +38,11 @@ class HomeScreen extends ConsumerWidget {
             style: textTheme.titleLarge?.copyWith(color: colors.primary)),
         actions: [
           IconButton(
+            tooltip: strings.recipesTitle,
+            icon: const Icon(Icons.menu_book),
+            onPressed: () => context.go(AppRoute.recipesBase),
+          ),
+          IconButton(
             tooltip: strings.localeToggleLabel,
             icon: const Icon(Icons.translate),
             onPressed: () => ref.read(localeControllerProvider.notifier).toggle(),

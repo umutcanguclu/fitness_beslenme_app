@@ -58,5 +58,22 @@
   "workoutSearchExercise": "Search exercises",
   "workoutErrorSetIncomplete": "Record at least weight/reps, time, or distance.",
   "workoutDeleteConfirm": "Delete this workout?",
-  "workoutDeleteConfirmBody": "This cannot be undone."
+  "workoutDeleteConfirmBody": "This cannot be undone.",
+  "recipesTitle": "Recipes",
+  "recipesSearch": "Search by name, tag, or ingredient",
+  "recipesCategoryAll": "All",
+  "recipesEmpty": "No recipes match your filters.",
+  "recipesNotFound": "Recipe not found.",
+  "recipesTime": "time",
+  "recipesServings": "servings",
+  "recipesDifficulty": "difficulty",
+  "recipesDifficultyEasy": "easy",
+  "recipesDifficultyMedium": "medium",
+  "recipesDifficultyHard": "hard",
+  "recipesIngredients": "Ingredients",
+  "recipesSteps": "Steps",
+  "recipesProtein": "protein",
+  "recipesCarbs": "carbs",
+  "recipesFat": "fat",
+  "tabRecipes": "Recipes"
 }

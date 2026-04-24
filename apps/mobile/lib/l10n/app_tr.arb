@@ -58,5 +58,22 @@
   "workoutSearchExercise": "Egzersiz ara",
   "workoutErrorSetIncomplete": "En az ağırlık/tekrar, süre veya mesafe gir.",
   "workoutDeleteConfirm": "Bu antrenmanı silmek istiyor musun?",
-  "workoutDeleteConfirmBody": "Bu işlem geri alınamaz."
+  "workoutDeleteConfirmBody": "Bu işlem geri alınamaz.",
+  "recipesTitle": "Tarifler",
+  "recipesSearch": "Ad, etiket veya malzeme ile ara",
+  "recipesCategoryAll": "Tümü",
+  "recipesEmpty": "Filtrelerle eşleşen tarif yok.",
+  "recipesNotFound": "Tarif bulunamadı.",
+  "recipesTime": "süre",
+  "recipesServings": "porsiyon",
+  "recipesDifficulty": "zorluk",
+  "recipesDifficultyEasy": "kolay",
+  "recipesDifficultyMedium": "orta",
+  "recipesDifficultyHard": "zor",
+  "recipesIngredients": "Malzemeler",
+  "recipesSteps": "Yapılışı",
+  "recipesProtein": "protein",
+  "recipesCarbs": "karb.",
+  "recipesFat": "yağ",
+  "tabRecipes": "Tarifler"
 }

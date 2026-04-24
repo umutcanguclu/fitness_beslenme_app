@@ -188,4 +188,55 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get workoutDeleteConfirmBody => 'Bu işlem geri alınamaz.';
+
+  @override
+  String get recipesTitle => 'Tarifler';
+
+  @override
+  String get recipesSearch => 'Ad, etiket veya malzeme ile ara';
+
+  @override
+  String get recipesCategoryAll => 'Tümü';
+
+  @override
+  String get recipesEmpty => 'Filtrelerle eşleşen tarif yok.';
+
+  @override
+  String get recipesNotFound => 'Tarif bulunamadı.';
+
+  @override
+  String get recipesTime => 'süre';
+
+  @override
+  String get recipesServings => 'porsiyon';
+
+  @override
+  String get recipesDifficulty => 'zorluk';
+
+  @override
+  String get recipesDifficultyEasy => 'kolay';
+
+  @override
+  String get recipesDifficultyMedium => 'orta';
+
+  @override
+  String get recipesDifficultyHard => 'zor';
+
+  @override
+  String get recipesIngredients => 'Malzemeler';
+
+  @override
+  String get recipesSteps => 'Yapılışı';
+
+  @override
+  String get recipesProtein => 'protein';
+
+  @override
+  String get recipesCarbs => 'karb.';
+
+  @override
+  String get recipesFat => 'yağ';
+
+  @override
+  String get tabRecipes => 'Tarifler';
 }

@@ -11,6 +11,8 @@ import '../../features/nutrition/presentation/nutrition_dashboard_screen.dart';
 import '../../features/nutrition/presentation/nutrition_wizard_screen.dart';
 import '../../features/programs/presentation/program_detail_screen.dart';
 import '../../features/programs/presentation/program_wizard_screen.dart';
+import '../../features/recipes/presentation/recipe_detail_screen.dart';
+import '../../features/recipes/presentation/recipes_list_screen.dart';
 import '../../features/workouts/presentation/active_workout_screen.dart';
 import '../../features/workouts/presentation/workout_detail_screen.dart';
 
@@ -25,6 +27,7 @@ class AppRoute {
   static const programDetailBase = '/programs';
   static const nutritionWizard = '/nutrition/new';
   static const nutritionDashboard = '/nutrition';
+  static const recipesBase = '/recipes';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -89,6 +92,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoute.nutritionDashboard,
         name: 'nutrition-dashboard',
         builder: (context, state) => const NutritionDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoute.recipesBase,
+        name: 'recipes',
+        builder: (context, state) => const RecipesListScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoute.recipesBase}/:id',
+        name: 'recipe-detail',
+        builder: (context, state) =>
+            RecipeDetailScreen(recipeId: state.pathParameters['id']!),
       ),
     ],
   );

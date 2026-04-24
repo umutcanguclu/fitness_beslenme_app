@@ -451,6 +451,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This cannot be undone.'**
   String get workoutDeleteConfirmBody;
+
+  /// No description provided for @recipesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get recipesTitle;
+
+  /// No description provided for @recipesSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, tag, or ingredient'**
+  String get recipesSearch;
+
+  /// No description provided for @recipesCategoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get recipesCategoryAll;
+
+  /// No description provided for @recipesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes match your filters.'**
+  String get recipesEmpty;
+
+  /// No description provided for @recipesNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe not found.'**
+  String get recipesNotFound;
+
+  /// No description provided for @recipesTime.
+  ///
+  /// In en, this message translates to:
+  /// **'time'**
+  String get recipesTime;
+
+  /// No description provided for @recipesServings.
+  ///
+  /// In en, this message translates to:
+  /// **'servings'**
+  String get recipesServings;
+
+  /// No description provided for @recipesDifficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'difficulty'**
+  String get recipesDifficulty;
+
+  /// No description provided for @recipesDifficultyEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'easy'**
+  String get recipesDifficultyEasy;
+
+  /// No description provided for @recipesDifficultyMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'medium'**
+  String get recipesDifficultyMedium;
+
+  /// No description provided for @recipesDifficultyHard.
+  ///
+  /// In en, this message translates to:
+  /// **'hard'**
+  String get recipesDifficultyHard;
+
+  /// No description provided for @recipesIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients'**
+  String get recipesIngredients;
+
+  /// No description provided for @recipesSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get recipesSteps;
+
+  /// No description provided for @recipesProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'protein'**
+  String get recipesProtein;
+
+  /// No description provided for @recipesCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'carbs'**
+  String get recipesCarbs;
+
+  /// No description provided for @recipesFat.
+  ///
+  /// In en, this message translates to:
+  /// **'fat'**
+  String get recipesFat;
+
+  /// No description provided for @tabRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get tabRecipes;
 }
 
 class _AppLocalizationsDelegate
