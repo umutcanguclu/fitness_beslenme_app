@@ -30,14 +30,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoute.home,
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
-      if (authAsync.isLoading) return null;
-      final auth = authAsync.valueOrNull;
-      final isAuthed = auth is AuthAuthenticated;
-      final onAuthPage = state.matchedLocation == AppRoute.signIn ||
-          state.matchedLocation == AppRoute.signUp;
-
-      if (!isAuthed && !onAuthPage) return AppRoute.signIn;
-      if (isAuthed && onAuthPage) return AppRoute.home;
+      // Dev-mode: auto-login handles credentials, never redirect to sign-in.
+      if (state.matchedLocation == AppRoute.signIn ||
+          state.matchedLocation == AppRoute.signUp) {
+        return AppRoute.home;
+      }
       return null;
     },
     routes: [

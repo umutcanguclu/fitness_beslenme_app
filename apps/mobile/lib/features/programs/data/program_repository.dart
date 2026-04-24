@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_error.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/domain/auth_state.dart';
 import '../domain/program.dart';
 
 class ProgramRepository {
@@ -63,6 +65,9 @@ final programRepositoryProvider = Provider<ProgramRepository>((ref) {
   return ProgramRepository(ref.watch(apiClientProvider).dio);
 });
 
-final activeProgramProvider = FutureProvider<Program?>((ref) {
+final activeProgramProvider = FutureProvider<Program?>((ref) async {
+  // Wait for auth auto-login before calling the API.
+  final auth = await ref.watch(authControllerProvider.future);
+  if (auth is! AuthAuthenticated) return null;
   return ref.watch(programRepositoryProvider).getActive();
 });

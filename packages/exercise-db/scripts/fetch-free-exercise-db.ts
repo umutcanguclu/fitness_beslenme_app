@@ -84,6 +84,38 @@ const categoryToType: Record<string, ExerciseType> = {
   strongman: 'strongman',
 };
 
+/**
+ * Categories dropped entirely — heavy skill/risk moves that require coaching.
+ * Users opting for a generated program should not get these automatically.
+ */
+const EXCLUDED_CATEGORIES = new Set(['olympic weightlifting', 'strongman']);
+
+/**
+ * Name patterns (case-insensitive) for moves with high injury risk in
+ * unsupervised settings. These are culled regardless of category.
+ */
+const RISK_PATTERNS: RegExp[] = [
+  /behind[\s-]*(the[\s-]+)?neck/i,
+  /behind[\s-]+(the[\s-]+)?back/i,
+  /upright\s+row/i,
+  /kipping/i,
+  /good\s+morning/i,
+  /jefferson\s+deadlift/i,
+  /stiff[\s-]*leg(ged)?\s+deadlift/i,
+  /sissy\s+squat/i,
+  /zercher/i,
+  /sumo\s+deadlift\s+high\s+pull/i,
+  /hanging\s+bar\s+good/i,
+  /atlas\s+stone/i,
+  /hack\s+squat(\s+machine)?$/i,
+  /reverse\s+hyper/i,
+];
+
+function isHighRisk(name: string, category: string): boolean {
+  if (EXCLUDED_CATEGORIES.has(category)) return true;
+  return RISK_PATTERNS.some((re) => re.test(name));
+}
+
 function mapMuscles(names: string[]): MuscleGroup[] {
   const set = new Set<MuscleGroup>();
   for (const n of names) {
@@ -100,6 +132,7 @@ function mapEquipment(name: string | null): Equipment[] {
 }
 
 function toExercise(raw: FedExercise): Exercise | null {
+  if (isHighRisk(raw.name, raw.category)) return null;
   const muscleGroup = mapMuscles(raw.primaryMuscles);
   if (muscleGroup.length === 0) return null;
 

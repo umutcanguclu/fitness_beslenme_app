@@ -39,11 +39,6 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.translate),
             onPressed: () => ref.read(localeControllerProvider.notifier).toggle(),
           ),
-          IconButton(
-            tooltip: strings.authSignOut,
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
-          ),
         ],
       ),
       body: SafeArea(
@@ -192,51 +187,89 @@ class _ProgramCard extends StatelessWidget {
         }
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => context.go('${AppRoute.programDetailBase}/${program.id}'),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colors.surface,
-                border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
+          child: Column(
+            children: [
+              InkWell(
                 borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Icons.fitness_center, color: colors.primary),
+                onTap: () => context.go('${AppRoute.programDetailBase}/${program.id}'),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Aktif Program',
-                            style: TextStyle(color: colors.textMuted, fontSize: 11)),
-                        const SizedBox(height: 2),
-                        Text(
-                          program.name,
-                          style: textTheme.titleMedium
-                              ?.copyWith(color: colors.textPrimary),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${program.daysPerWeek} gün/hafta · ${program.sessionMinutes} dk',
-                          style: TextStyle(color: colors.textMuted, fontSize: 12),
+                        child: Icon(Icons.fitness_center, color: colors.primary),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Aktif Program',
+                                style: TextStyle(
+                                    color: colors.textMuted, fontSize: 11)),
+                            const SizedBox(height: 2),
+                            Text(
+                              program.name,
+                              style: textTheme.titleMedium
+                                  ?.copyWith(color: colors.textPrimary),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${program.daysPerWeek} gün/hafta · ${program.sessionMinutes} dk',
+                              style:
+                                  TextStyle(color: colors.textMuted, fontSize: 12),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Icon(Icons.chevron_right, color: colors.textMuted),
+                    ],
                   ),
-                  Icon(Icons.chevron_right, color: colors.textMuted),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 10),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => context.go(AppRoute.programWizard),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    border: Border.all(color: colors.border),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.auto_awesome,
+                          color: colors.primary, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Yeni program oluştur',
+                          style: TextStyle(
+                              color: colors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right,
+                          color: colors.textMuted, size: 18),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

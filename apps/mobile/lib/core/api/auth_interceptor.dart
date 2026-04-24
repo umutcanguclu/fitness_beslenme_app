@@ -28,13 +28,8 @@ class AuthInterceptor extends Interceptor {
 
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
-      await storage.delete(SecureStorageKeys.accessToken);
-      await storage.delete(SecureStorageKeys.refreshToken);
-      if (onUnauthorized != null) {
-        await onUnauthorized!();
-      }
-    }
+    // Dev mode: don't auto-wipe tokens on 401. Surface the error to the caller
+    // and let the user retry; avoids being kicked out mid-test on a stale token.
     handler.next(err);
   }
 }
