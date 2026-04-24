@@ -10,6 +10,8 @@ import '../../../core/theme/fittrack_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_state.dart';
+import '../../nutrition/data/nutrition_repository.dart';
+import '../../nutrition/domain/nutrition.dart';
 import '../../programs/data/program_repository.dart';
 import '../../programs/domain/program.dart';
 import '../../workouts/application/workouts_controller.dart';
@@ -27,6 +29,7 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider).valueOrNull;
     final history = ref.watch(workoutHistoryProvider);
     final activeProgram = ref.watch(activeProgramProvider);
+    final activeNutrition = ref.watch(activeNutritionPlanProvider);
     final userName = authState is AuthAuthenticated ? authState.user.name : '';
 
     return Scaffold(
@@ -56,6 +59,8 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _ProgramCard(activeProgram: activeProgram),
+              const SizedBox(height: 12),
+              _NutritionCard(activeNutrition: activeNutrition),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -270,6 +275,112 @@ class _ProgramCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _NutritionCard extends StatelessWidget {
+  const _NutritionCard({required this.activeNutrition});
+  final AsyncValue<NutritionPlan?> activeNutrition;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return activeNutrition.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (plan) {
+        if (plan == null) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => context.go(AppRoute.nutritionWizard),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [colors.accent.withValues(alpha: 0.15), colors.surface],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: colors.border),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.restaurant_menu, color: colors.accent, size: 28),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Beslenme planı oluştur',
+                              style: textTheme.titleMedium
+                                  ?.copyWith(color: colors.textPrimary)),
+                          const SizedBox(height: 4),
+                          Text('Kalori + makro hedefi, örnek günlük yemek planı',
+                              style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: colors.textMuted),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => context.go(AppRoute.nutritionDashboard),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                border: Border.all(color: colors.accent.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.restaurant_menu, color: colors.accent),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Beslenme Planı',
+                            style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                        const SizedBox(height: 2),
+                        Text(plan.name,
+                            style: textTheme.titleMedium
+                                ?.copyWith(color: colors.textPrimary)),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${plan.targetKcal} kcal · P${plan.proteinG} K${plan.carbsG} Y${plan.fatG}',
+                          style: TextStyle(color: colors.textMuted, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: colors.textMuted),
+                ],
+              ),
+            ),
           ),
         );
       },

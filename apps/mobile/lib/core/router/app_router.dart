@@ -7,6 +7,8 @@ import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/sign_up_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/nutrition/presentation/nutrition_dashboard_screen.dart';
+import '../../features/nutrition/presentation/nutrition_wizard_screen.dart';
 import '../../features/programs/presentation/program_detail_screen.dart';
 import '../../features/programs/presentation/program_wizard_screen.dart';
 import '../../features/workouts/presentation/active_workout_screen.dart';
@@ -21,6 +23,8 @@ class AppRoute {
   static const workoutDetailBase = '/workout';
   static const programWizard = '/programs/new';
   static const programDetailBase = '/programs';
+  static const nutritionWizard = '/nutrition/new';
+  static const nutritionDashboard = '/nutrition';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -75,6 +79,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'program-detail',
         builder: (context, state) =>
             ProgramDetailScreen(programId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoute.nutritionWizard,
+        name: 'nutrition-wizard',
+        builder: (context, state) => const NutritionWizardScreen(),
+      ),
+      GoRoute(
+        path: AppRoute.nutritionDashboard,
+        name: 'nutrition-dashboard',
+        builder: (context, state) => const NutritionDashboardScreen(),
       ),
     ],
   );

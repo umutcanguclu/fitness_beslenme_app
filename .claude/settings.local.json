@@ -74,7 +74,9 @@
       "Bash(\"/c/Windows/System32/tasklist.exe\" \"//FI\" \"IMAGENAME eq node.exe\")",
       "Bash(\"/c/Windows/System32/wbem/wmic.exe\" process *)",
       "PowerShell(Get-CimInstance Win32_Process -Filter \"name='node.exe'\")",
-      "Bash(pnpm --filter @fittrack/shared build)"
+      "Bash(pnpm --filter @fittrack/shared build)",
+      "WebFetch(domain:blog.supplementler.com)",
+      "Bash(pnpm --filter @fittrack/recipe-db typecheck)"
     ]
   }
 }
