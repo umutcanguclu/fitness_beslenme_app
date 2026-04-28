@@ -2,9 +2,11 @@ import type { User } from '@prisma/client';
 import {
   type AuthTokens,
   type LoginInput,
-  type RegisterInput,
+  type RegisterCoachInput,
+  type RegisterPlayerInput,
   type User as SharedUser,
 } from '@fittrack/shared';
+import { prisma } from '../lib/prisma.js';
 import { AppError } from '../lib/errors.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import {
@@ -29,18 +31,100 @@ export class AuthService {
     private readonly refreshTokens: RefreshTokenRepository = refreshTokenRepository,
   ) {}
 
-  async register(input: RegisterInput): Promise<AuthResult> {
+  async registerCoach(input: RegisterCoachInput): Promise<AuthResult> {
     const existing = await this.users.findByEmail(input.email);
     if (existing) {
-      throw AppError.conflict('Email is already registered');
+      throw AppError.conflict('Bu e-posta zaten kayıtlı');
     }
     const passwordHash = await hashPassword(input.password);
-    const user = await this.users.create({
-      email: input.email,
-      passwordHash,
-      name: input.name,
-      locale: input.locale,
+
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          email: input.email.toLowerCase(),
+          passwordHash,
+          fullName: input.fullName,
+          role: 'coach',
+          locale: input.locale ?? 'tr',
+          phone: input.phone,
+        },
+      });
+
+      // Opsiyonel: kulüp ismi verilmişse kulüp + coach kaydı oluştur
+      if (input.clubName) {
+        const club = await tx.club.create({
+          data: { name: input.clubName },
+        });
+        await tx.coach.create({
+          data: {
+            userId: createdUser.id,
+            clubId: club.id,
+            isClubAdmin: true,
+          },
+        });
+      } else {
+        await tx.coach.create({
+          data: { userId: createdUser.id },
+        });
+      }
+
+      return createdUser;
     });
+
+    const tokens = await this.issueTokens(user);
+    return { user: toSharedUser(user), tokens };
+  }
+
+  async registerPlayer(input: RegisterPlayerInput): Promise<AuthResult> {
+    const invite = await prisma.invite.findUnique({
+      where: { code: input.inviteCode.toUpperCase() },
+      include: { player: true },
+    });
+    if (!invite) {
+      throw AppError.notFound('Davet kodu bulunamadı');
+    }
+    if (invite.acceptedAt) {
+      throw AppError.conflict('Bu davet kodu zaten kullanıldı');
+    }
+    if (invite.expiresAt < new Date()) {
+      throw AppError.unauthorized('Davet kodu süresi dolmuş');
+    }
+
+    const existing = await this.users.findByEmail(input.email);
+    if (existing) {
+      throw AppError.conflict('Bu e-posta zaten kayıtlı');
+    }
+
+    const passwordHash = await hashPassword(input.password);
+
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          email: input.email.toLowerCase(),
+          passwordHash,
+          fullName: input.fullName,
+          role: 'player',
+          locale: input.locale ?? 'tr',
+          phone: input.phone,
+        },
+      });
+
+      // Davete bağlı player profili varsa oyuncuyla eşle
+      if (invite.playerId) {
+        await tx.player.update({
+          where: { id: invite.playerId },
+          data: { userId: createdUser.id },
+        });
+      }
+
+      await tx.invite.update({
+        where: { id: invite.id },
+        data: { acceptedAt: new Date(), acceptedBy: createdUser.id },
+      });
+
+      return createdUser;
+    });
+
     const tokens = await this.issueTokens(user);
     return { user: toSharedUser(user), tokens };
   }
@@ -48,7 +132,7 @@ export class AuthService {
   async login(input: LoginInput): Promise<AuthResult> {
     const user = await this.users.findByEmail(input.email);
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-      throw AppError.unauthorized('Invalid credentials');
+      throw AppError.unauthorized('E-posta veya şifre hatalı');
     }
     const tokens = await this.issueTokens(user);
     return { user: toSharedUser(user), tokens };
@@ -58,14 +142,13 @@ export class AuthService {
     const tokenHash = hashRefreshToken(rawRefreshToken);
     const stored = await this.refreshTokens.findActiveByHash(tokenHash);
     if (!stored) {
-      throw AppError.unauthorized('Refresh token is invalid or expired');
+      throw AppError.unauthorized('Refresh token geçersiz veya süresi dolmuş');
     }
     const user = await this.users.findById(stored.userId);
     if (!user) {
       await this.refreshTokens.revoke(stored.id);
-      throw AppError.unauthorized('User no longer exists');
+      throw AppError.unauthorized('Kullanıcı artık mevcut değil');
     }
-    // Rotate: revoke old, issue new pair.
     await this.refreshTokens.revoke(stored.id);
     return this.issueTokens(user);
   }
@@ -80,7 +163,7 @@ export class AuthService {
 
   async getById(id: string): Promise<SharedUser> {
     const user = await this.users.findById(id);
-    if (!user) throw AppError.notFound('User not found');
+    if (!user) throw AppError.notFound('Kullanıcı bulunamadı');
     return toSharedUser(user);
   }
 
@@ -100,9 +183,11 @@ function toSharedUser(user: User): SharedUser {
   return {
     id: user.id,
     email: user.email,
-    name: user.name,
+    fullName: user.fullName,
+    role: user.role,
     locale: user.locale,
-    unitSystem: user.unitSystem,
+    phone: user.phone,
+    avatarUrl: user.avatarUrl,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

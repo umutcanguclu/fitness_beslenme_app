@@ -1,35 +1,44 @@
 import { z } from 'zod';
 
-export const LocaleSchema = z.enum(['en', 'tr']);
+export const LocaleSchema = z.enum(['tr', 'en']);
 export type Locale = z.infer<typeof LocaleSchema>;
 
-export const UnitSystemSchema = z.enum(['metric', 'imperial']);
-export type UnitSystem = z.infer<typeof UnitSystemSchema>;
-
-export const GenderSchema = z.enum(['male', 'female', 'other', 'prefer_not_to_say']);
-export type Gender = z.infer<typeof GenderSchema>;
-
-export const GoalSchema = z.enum(['lose_fat', 'gain_muscle', 'maintain', 'general_fitness']);
-export type Goal = z.infer<typeof GoalSchema>;
+export const UserRoleSchema = z.enum(['coach', 'player']);
+export type UserRole = z.infer<typeof UserRoleSchema>;
 
 export const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
-  name: z.string().min(1).max(80),
-  locale: LocaleSchema.default('en'),
-  unitSystem: UnitSystemSchema.default('metric'),
+  fullName: z.string().min(1).max(120),
+  role: UserRoleSchema,
+  locale: LocaleSchema.default('tr'),
+  phone: z.string().max(32).nullable().optional(),
+  avatarUrl: z.string().url().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
 export type User = z.infer<typeof UserSchema>;
 
-export const RegisterInputSchema = z.object({
+export const RegisterCoachInputSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(128),
-  name: z.string().min(1).max(80),
+  fullName: z.string().min(1).max(120),
   locale: LocaleSchema.optional(),
+  phone: z.string().max(32).optional(),
+  clubName: z.string().min(1).max(120).optional(), // varsa kulüp de oluştur
 });
-export type RegisterInput = z.infer<typeof RegisterInputSchema>;
+export type RegisterCoachInput = z.infer<typeof RegisterCoachInputSchema>;
+
+// Oyuncu davet kodu ile kayıt olur — koç önce Invite oluşturur.
+export const RegisterPlayerInputSchema = z.object({
+  inviteCode: z.string().min(4).max(16),
+  email: z.string().email(),
+  password: z.string().min(8).max(128),
+  fullName: z.string().min(1).max(120),
+  locale: LocaleSchema.optional(),
+  phone: z.string().max(32).optional(),
+});
+export type RegisterPlayerInput = z.infer<typeof RegisterPlayerInputSchema>;
 
 export const LoginInputSchema = z.object({
   email: z.string().email(),
@@ -42,20 +51,3 @@ export const AuthTokensSchema = z.object({
   refreshToken: z.string(),
 });
 export type AuthTokens = z.infer<typeof AuthTokensSchema>;
-
-export const ProfileSchema = z.object({
-  userId: z.string().uuid(),
-  heightCm: z.number().positive().max(300).nullable(),
-  weightKg: z.number().positive().max(500).nullable(),
-  age: z.number().int().min(10).max(120).nullable(),
-  gender: GenderSchema.nullable(),
-  goal: GoalSchema.nullable(),
-  updatedAt: z.coerce.date(),
-});
-export type Profile = z.infer<typeof ProfileSchema>;
-
-export const ProfileUpdateInputSchema = ProfileSchema.omit({
-  userId: true,
-  updatedAt: true,
-}).partial();
-export type ProfileUpdateInput = z.infer<typeof ProfileUpdateInputSchema>;

@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="fittrack (tests)" type="FlutterTestRunConfigurationType" factoryName="Flutter Test">
-    <option name="scope" value="DIRECTORY" />
-    <option name="testRunnerOptions" value="" />
-    <option name="filePath" value="$PROJECT_DIR$/test" />
-    <method v="2" />
-  </configuration>
-</component>

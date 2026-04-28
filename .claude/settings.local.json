@@ -79,7 +79,14 @@
       "Bash(pnpm --filter @fittrack/recipe-db typecheck)",
       "Bash(pnpm --filter @fittrack/recipe-db exec tsx --eval \"import\\('./src/index.ts'\\).then\\(m => console.log\\('TOTAL RECIPES:', m.recipes.length\\)\\)\")",
       "Bash(pnpm --filter @fittrack/recipe-db build:json)",
-      "Bash(pnpm --filter @fittrack/recipe-db sync)"
+      "Bash(pnpm --filter @fittrack/recipe-db sync)",
+      "WebSearch",
+      "WebFetch(domain:www.youthsportsortho.com)",
+      "WebFetch(domain:www.physio-pedia.com)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(npx --version)",
+      "Bash(node_modules/.bin/tsc.cmd --noEmit)"
     ]
   }
 }

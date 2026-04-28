@@ -1,161 +1,162 @@
-# CONTEXT.md — Claude Code Çalışma Talimatları
+# CONTEXT.md — Claude Code / Cursor için çalışma talimatları
 
-> Bu dosya, Claude Code ve Cursor gibi AI agent'lar tarafından bu projede çalışırken okunur. Projenin mimarisi, kuralları ve kod stilini tanımlar. Her oturumda bu dosyayı tekrar oku.
+> Bu dosya, AI agent'lar bu projede çalışırken her oturumda okunur. Mimari, kurallar, kod stilini tanımlar.
 
 ---
 
-## Proje: FitTrack
+## Proje: fittrack
 
-Kapsamlı mobil fitness takip uygulaması. Detay için `GDD.md` dosyasına bak.
-**Mimari:** Hibrit monorepo — `apps/mobile` (Flutter/Dart) + `apps/api` (Fastify/TS) + `packages/shared` + `packages/exercise-db`. Backend ve paketler pnpm workspace'inde; mobile tarafı bağımsız bir Flutter projesi (pub ile bağımlılık yönetir).
+Alt lig (TFF 2./3. Lig, BAL, bölgesel amatör) ve akademi (U13–U21) **futbol antrenörleri** için "antrenör + oyuncu" platformu. Antrenör oyuncu profillerini ve kulüp kaynaklarını girer; **kural tabanlı engine** her oyuncuya haftalık antrenman programı üretir. Oyuncu telefonundan programını görür, RPE / katılım girer.
 
-## Stack (kesinleşmiş, değiştirme)
+Vizyon ve kapsam için `GDD.md`. Bu **bir genel fitness app'i değil** — geçmişte FitTrack adıyla başlayıp futbol odağına döndürüldü. Eski fitness kodu `apps/api/_archive/` ve `packages/shared/_archive/` altında, referans için duruyor — silme.
 
-**Mobile:** Flutter 3.41+ · Dart 3.11+ · Material 3 · Riverpod 2 · go_router · dio · freezed + json_serializable · flutter_localizations + intl (ARB) · flutter_secure_storage · shared_preferences · fl_chart · google_fonts
-**Backend:** Node.js 20+ · Fastify · TypeScript · Prisma · PostgreSQL · JWT · Zod · Pino
-**Tooling:** pnpm (backend + paketler) · Flutter CLI (mobile) · ESLint · Prettier · TypeScript strict mode · `flutter analyze` + `dart format`
+## Hedef kullanıcı gerçekliği (HER kararda buna göre düşün)
 
-## Dil ve lokalizasyon
+- Alt lig kulübünde antrenör tek başına: TD + fitness koçu + analist.
+- Bütçe yok: GPS yelek, biyometrik tracker, fizyoterapist YOK. Veri MANUEL.
+- Gym genelde yok ya da çok sınırlı; programlar bodyweight + saha ağırlıklı olabilmeli.
+- Saha günde 1.5–2 saat, akşam, kötü zemin, kış aylarında ışık problemi.
+- Kadro heterojen: 17–35 yaş, yarı pro + amatör + iş yoğun oyuncular bir arada.
+- Bir koç çoğunlukla 2–3 yaş kategorisi çalıştırır.
+- WhatsApp birinci iletişim kanalı; PDF/görsel paylaşım kritik.
+- Türkçe BİRİNCİ dil, sade UI, mobile-first, offline tolerant.
+- Premier League / elit kulüp varsayımı YAPMA. Sensör/wearable/AI taktik analizi KAPSAM DIŞI.
 
-- **Kullanıcıya gösterilen tüm metinler i18n anahtarları üzerinden gelir.** Widget ağacında veya string birleştirmelerde ham Türkçe/İngilizce metin kullanma.
-- Kaynak diller: `en` (base) ve `tr`.
-- Çeviri dosyaları: `apps/mobile/lib/l10n/app_{en,tr}.arb` — `flutter gen-l10n` ile `AppLocalizations` sınıfı üretilir.
-- Her yeni feature için hem `app_en.arb` hem `app_tr.arb` güncellenmeli — biri eksikse kod review'da reddet.
-- Tarih/sayı formatları `intl` (DateFormat, NumberFormat) üzerinden `Locale.languageCode`'a göre; hard-code etme.
+## Mimari
+
+```
+fittrack/
+├── apps/
+│   └── api/                          # Fastify + Prisma + Postgres
+│       ├── src/
+│       │   ├── routes/               # Fastify route handler'lar (thin)
+│       │   ├── services/             # business logic
+│       │   │   ├── auth.service.ts
+│       │   │   └── program-engine/   # kural tabanlı program üretici
+│       │   ├── repositories/         # Prisma wrapper'lar
+│       │   ├── plugins/              # auth plugin (requireAuth hook)
+│       │   ├── lib/                  # env, errors, prisma, password, tokens
+│       │   ├── app.ts                # Fastify build
+│       │   └── server.ts             # entrypoint
+│       ├── prisma/
+│       │   ├── schema.prisma
+│       │   ├── seed.ts
+│       │   └── seed/exercises.ts     # ~190 futbol egzersizi (idempotent upsert)
+│       └── test/                     # vitest (lib + entegrasyon testleri)
+├── packages/
+│   └── shared/                       # @fittrack/shared
+│       └── src/schemas/              # Zod schemas (.ts olarak doğrudan export, build yok)
+│           ├── enums.schema.ts
+│           ├── user.schema.ts
+│           ├── club.schema.ts
+│           ├── player.schema.ts
+│           ├── exercise.schema.ts
+│           ├── program.schema.ts
+│           ├── match.schema.ts
+│           └── performance.schema.ts
+└── _archive (apps/api/, packages/shared/) — eski FitTrack kodu, silme
+```
+
+## Stack (kesinleşmiş)
+
+- Node.js 20+, pnpm 10+ workspace
+- Fastify 5 + TypeScript strict mode + Prisma 5.22 + PostgreSQL 17
+- JWT access + refresh, bcrypt, plugins/auth.ts içinde `requireAuth` hook
+- Zod (validation) — schemalar `@fittrack/shared`'dan, frontend ile paylaşılır
+- Pino (logging), Vitest (test)
+- Frontend stack kararı VERİLMEDİ. UI kodu yazma.
+
+## DB (Postgres lokal)
+
+- Servis: `"C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" -D "$env:USERPROFILE\dev\pgdata" start`
+- DB: `fittrack` (bağlantı: `apps/api/.env` içinde `DATABASE_URL`)
+- Schema PUSH edildi, ~190 egzersiz seed'lendi
+- Yeni migration: `prisma migrate dev --name <ad>` (artık prod'a yaklaşıyoruz, history isteriz)
+- Prisma binary (pnpm yoksa): `apps/api/node_modules/.bin/prisma.cmd`
+- DB'yi reset etme — seed'lenmiş egzersizleri koru. Seed `upsert` ile idempotent; yeniden çalıştırmak güvenli.
+
+## Engine (apps/api/src/services/program-engine/)
+
+Kural tabanlı, ML YOK, şeffaf if-else. Versiyon: `rule_engine_v1`.
+
+**Akış** (`index.ts` → `generateProgram`):
+1. `loadPlayerSnapshot` → yaş + mevki + boy/kilo + son availability + aktif sakatlıklar
+2. `loadClubResources` → ekipman + tesis → `availableLocations` (`bodyweight_anywhere` ve `home` her zaman açık)
+3. `loadMatchContext` → bu hafta maç var mı, hangi gün
+4. `planWeek` → 7 günlük (kategori + intensity 1-5 + süre + isOff) iskelet
+   - `match_week`: MD-3 yüksek hacim, MD-2 yüksek şiddet, MD-1 hafif teknik+set_piece, MD off, MD+1 recovery
+   - `generic_week`: Pzt güç, Salı sürat+teknik, Çar recovery, Per plio+SSG vs.
+   - Availability adjustment: `injured/ill/away` → off; `doubtful` → %60 yük + low impact; `limited` → %75 yük; aktif sakatlık → `plyometric` ve `sprint_agility` çıkar
+5. Her gün için `selectExercisesForCategory`:
+   - kategori eşleşir + yaş aralığı + mevki (boş ya da içeriyor)
+   - `requiredEquipment ⊆ club.equipment` (AND)
+   - `locations ∩ availableLocations ≠ ∅`
+   - Aynı egzersiz hafta içinde tekrar etmez
+6. `toSelectedExercise` → defaults uygular + günün şiddetine göre set sayısı modüle eder
+7. `GeneratedProgram` döner. DB yazımı: `program-writer.ts`
+
+**Versiyonlama**: `ENGINE_VERSION = 'rule_engine_v1'`. Kural değişikliklerinde versiyon bumplanır; eski programlar audit için `generationInputs` JSON snapshot ile saklanır.
+
+Kalibrasyon notları: `apps/api/src/services/program-engine/README.md`.
 
 ## Kod kuralları
 
 ### TypeScript
 - `strict: true` zorunlu. `any` kullanma, `unknown` tercih et.
-- Paylaşımlı tipler `packages/shared/src/types/` altında.
-- Zod şemalarından tip türet: `export type User = z.infer<typeof UserSchema>`.
+- Paylaşımlı tipler `packages/shared/src/types/`, şemalar `packages/shared/src/schemas/`.
+- Zod şemalarından tip türet: `export type X = z.infer<typeof XSchema>`.
 
-### Dosya organizasyonu
-- Mobile: feature-based klasörleme (`lib/features/workouts/...` gibi), tip-based değil.
-- Her feature klasörü: `data/` (api + repository), `domain/` (modeller + validasyon), `presentation/` (ekranlar + widget'lar + controller'lar), `providers.dart` (Riverpod provider export'ları).
-- Backend: route → controller → service → repository katmanları ayrı.
-
-### Naming (Dart / Flutter)
-- Dosyalar: `snake_case.dart` (Dart resmi stili).
-- Sınıflar / enum'lar / typedef: `PascalCase`.
-- Değişkenler, metodlar, fonksiyonlar: `lowerCamelCase`.
-- Sabitler: `lowerCamelCase` (`const kApiTimeout = ...`) — `SCREAMING_SNAKE_CASE` kullanma, bu JS/TS geleneği.
-- Freezed modelleri: `WorkoutModel`, `AuthState` gibi; JSON adapter dosyaları codegen tarafından üretilir (`*.freezed.dart`, `*.g.dart` — commit edilir).
-- Riverpod provider'lar: `xxxProvider` (`authControllerProvider`, `workoutRepositoryProvider`).
-
-### Naming (Backend — değişmedi)
-- TypeScript: camelCase dosya, PascalCase sınıf, Zod şemaları `XxxSchema`.
-
-### State management (Flutter)
-- **Tüm async veri (server state dahil)** → Riverpod `AsyncNotifier` / `FutureProvider` / `StreamProvider`. Cache + invalidation Riverpod'un `ref.invalidate` / `ref.refresh` ile yönetilir.
-- **Client UI state** (auth, theme, active workout) → Riverpod `Notifier` / `AsyncNotifier`.
-- Widget lokal state → `StatefulWidget` + `setState` (küçük UI detayları için).
-- Inherited widget elle yazma — Riverpod bunun yerine geçiyor.
-
-### Styling (Flutter)
-- `ThemeData` (Material 3) + özel `ThemeExtension` ile token'lar: `primary`, `accent`, `background`, `surface`, `border`, `text`, `textMuted`, `textDim`.
-- Renk / tipografi değerleri hard-code edilmez — `Theme.of(context).extension<FitTrackColors>()!` üzerinden okunur.
-- Koyu tema default; light tema ileri fazda.
-- Stil dağılımı için `const TextStyle` / `Container` içinde magic sayı yerine `Theme.of(context).textTheme` + extension.
-
-### Forms
-- Her form: `Form` widget + `TextFormField` + `FormFieldValidator`.
-- Validasyon kuralları `lib/core/validation/` altında saf Dart fonksiyonlar; mesajlar `AppLocalizations` anahtarı döndürür.
-- Backend ile paylaşım yok (Zod şemaları sadece backend'de) — mobilde kurallar elle tutulur; değişiklik olduğunda iki tarafı birlikte güncelle.
-
-### API katmanı (mobile)
-- Tüm backend çağrıları `lib/core/api/api_client.dart` üzerinden — dio instance + auth interceptor + refresh interceptor.
-- Feature'a özgü endpoint'ler `lib/features/<feature>/data/<feature>_api.dart`, repository `<feature>_repository.dart`.
-- Riverpod provider'ları `providers.dart` dosyasında toplanır; UI doğrudan repository'ye değil, provider'a bakar.
-
-### Backend
-- Route handler'lar thin — sadece input parse + service çağrısı.
+### Backend katmanları
+- Route handler'lar **thin**: Zod parse + service çağrısı + reply, başka mantık yok.
 - Business logic → service layer.
 - DB erişimi → repository layer (Prisma wrap).
-- Her endpoint Zod ile input/output validate eder.
-- Error handling: custom `AppError` class, Fastify error handler yakalar.
+- Hatalar: `AppError` class (`apps/api/src/lib/errors.ts`) — `validation/unauthorized/forbidden/notFound/conflict/internal` factory'leri var.
+- Validation: tüm input'larda `@fittrack/shared` Zod schema parse et.
+
+### Naming
+- TypeScript: `camelCase` dosya, `PascalCase` sınıf, Zod şemaları `XxxSchema`, tipler `Xxx`.
+
+### Yetkilendirme kuralları (CRUD'lar yazılırken)
+- `coach`: kendi kulübünün kapsamı dışına çıkamaz (Club/Team/Player/Facility/Equipment/Match/Program).
+- `coach`: `isClubAdmin === true` ise kulüp ayarlarına yazabilir; değilse sadece okuyabilir + kendi takımlarına dair işlem yapar.
+- `player`: sadece kendi `Player` profilini, kendi `Programları`nı, kendi `SessionLog/Attendance`'ını görür/yazar.
+- `requireAuth` hook + ek role check serviste yapılır.
+
+## Dil ve lokalizasyon
+
+- Hata mesajları, kullanıcıya dönen metinler **Türkçe**.
+- Logging mesajları İngilizce (operasyonel).
+- Kod yorumları İngilizce.
+
+## Test politikası
+
+- Backend: kritik service için unit test (Vitest), endpoint happy path için entegrasyon testi.
+- Test DB stratejisi: ya ayrı schema ya transaction-rollback per test. `apps/api/test/lib/{password,tokens}.test.ts` saf unit, dokunma.
+- TS strict + Zod ilk savunma hattı.
 
 ## Git workflow
 
-- Ana branch: `main`. Feature'lar: `feat/xxx`, fix'ler: `fix/xxx`.
-- Commit mesajları: Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`).
-- **Büyük dosyalar commit etme.** `.gitignore`: `node_modules`, `.env`, `*.keystore`, `ios/Pods`, `android/build`, `android/.gradle`, `dist`, `build/` (Flutter), `.dart_tool/`, `.flutter-plugins*`, `*.iml`.
+- Ana branch: `main`. Feature: `feat/xxx`, fix: `fix/xxx`.
+- Commit: Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`).
+- `.gitignore`: `node_modules`, `.env`, `dist`, `*.iml`, `logs/`, `.dart_tool/` (bekletici).
 
 ## Environment
 
-- `.env` dosyaları asla commit edilmez. `.env.example` her zaman güncel tutulur.
-- Secret'lar: JWT_SECRET, DATABASE_URL, REFRESH_SECRET.
-- Mobile env: `apps/mobile/.env` — `--dart-define-from-file=.env` ile build sırasında inject edilir. Runtime okuması `String.fromEnvironment('API_URL', defaultValue: ...)` ile.
-
-## Test politikası (MVP aşamasında hafif)
-
-- Backend: kritik service fonksiyonları için unit test (Vitest). Endpoint happy path testi.
-- Mobile: MVP'de test yazma, Faz 2'den sonra ekle (`flutter_test` + `mocktail`).
-- TypeScript strict + Zod (backend) ve Dart null safety + freezed (mobile) ilk savunma hattı.
+- `.env` ASLA commit edilmez. `.env.example` her zaman güncel.
+- Secrets: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`.
+- Agent kuralı: `.env` veya secret dosyalarını okuma/yazma.
 
 ## Agent davranış kuralları
 
 1. **Asla otomatik `git push` yapma.** Commit'e kadar olur, push'u kullanıcı yapar.
-2. **Asla `.env` veya secret dosyalarını okuma/yazma.**
-3. **Büyük refactor'ları parçalara böl.** Tek bir PR'da 500+ satır değişiklik yapma.
-4. **Yeni dependency eklerken sor.** `pnpm add` veya `flutter pub add` koşmadan önce gerekçesini açıkla.
-5. **Dil talimatı:** Kod yorumları İngilizce, commit mesajları İngilizce, ama kullanıcıya (Garrosh'a) cevaplar Türkçe.
-6. **Platform:** Geliştirici Windows CMD kullanıyor. `&&` yerine ayrı komutlar ver, gerekirse `.bat` dosyaları öner.
-7. **Üretim kalitesi:** Placeholder veya "TODO" bırakma. Bir şeyi bilmiyorsan sor, uydurma.
-8. **Exercise DB:** `packages/exercise-db/src/exercises.json` tek gerçek kaynak. Mobile build zamanı bu dosyayı `apps/mobile/assets/exercises.json` olarak kopyalar (pubspec'te asset referansı). Kodun içinde egzersiz listesi tanımlama.
-9. **Codegen dosyaları commit edilir.** `*.freezed.dart`, `*.g.dart`, `AppLocalizations` çıktıları git'te tutulur — CI'de yeniden üretme maliyetini kaldırır.
-
-## Klasör haritası (hedef)
-
-```
-fitness-app/
-├── apps/
-│   ├── mobile/                     # Flutter app
-│   │   ├── lib/
-│   │   │   ├── main.dart
-│   │   │   ├── core/
-│   │   │   │   ├── api/            # dio client, interceptors
-│   │   │   │   ├── router/         # go_router config + guards
-│   │   │   │   ├── storage/        # secure + prefs wrappers
-│   │   │   │   ├── theme/          # ThemeData + ThemeExtension
-│   │   │   │   ├── validation/     # reusable validators
-│   │   │   │   └── env.dart        # compile-time env
-│   │   │   ├── features/           # auth, workouts, exercises, progress, profile
-│   │   │   └── l10n/               # app_en.arb, app_tr.arb (+ generated)
-│   │   ├── assets/                 # fonts, exercises.json mirror
-│   │   ├── android/
-│   │   ├── ios/
-│   │   ├── l10n.yaml
-│   │   └── pubspec.yaml
-│   └── api/
-│       ├── src/
-│       │   ├── routes/             # Fastify route handlers
-│       │   ├── services/           # business logic
-│       │   ├── repositories/       # Prisma wrappers
-│       │   ├── lib/                # auth, errors, logger
-│       │   └── server.ts
-│       ├── prisma/
-│       │   └── schema.prisma
-│       └── package.json
-├── packages/
-│   ├── shared/
-│   │   └── src/
-│   │       ├── schemas/            # Zod schemas (User, Workout, Set, ...)
-│   │       └── types/
-│   └── exercise-db/
-│       ├── src/exercises.json
-│       └── src/index.ts            # Typed export (backend consumer)
-├── CONTEXT.md
-├── GDD.md
-├── README.md
-├── package.json                    # backend + paketler (pnpm workspace root)
-├── pnpm-workspace.yaml
-└── tsconfig.base.json
-```
-
-## MVP Yol Haritası (aktif faz)
-
-**Şu anda:** Faz 0 — Proje kurulumu
-**Sonraki:** Faz 1 — Auth + Exercise Library + Workout CRUD
-
-Her görev tamamlandığında bu dosyadaki checkbox'lar güncellenir.
+2. **`.env` veya secret dosyalarını okuma/yazma.**
+3. **Büyük refactor'ları parçalara böl.** Tek PR'da 500+ satır değişiklik yapma.
+4. **Yeni dependency eklerken sor.** `pnpm add` öncesi gerekçeyi açıkla.
+5. **Dil:** Kod yorumları İngilizce, commit mesajları İngilizce, kullanıcıya cevaplar Türkçe.
+6. **Platform:** Geliştirici Windows. PowerShell'de native exe'lere `2>&1` kullanma; stderr zaten yakalanır. Bash'te `&&` çalışır, CMD'de chain'leri ayır.
+7. **Üretim kalitesi:** "TODO" ve placeholder bırakma. Bilmiyorsan sor.
+8. **DB reset / migration etmeden önce sor.** Seed'lenmiş egzersizleri koru.
+9. **Yorum minimum.** Sadece WHY açıklayan satırlar. İsimler kendini açıklar.
+10. **`_archive/` altına dokunma.** Referans için duruyor.
+11. **Yeni .md oluşturma.** Mevcut README/GDD/CONTEXT'i gerekirse güncelle.
+12. **Frontend stack yok.** UI kodu yazma. API + engine + test odakla.

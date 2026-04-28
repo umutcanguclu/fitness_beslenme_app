@@ -1,11 +1,13 @@
-import type { Locale, PrismaClient, User } from '@prisma/client';
+import type { Locale, PrismaClient, User, UserRole } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 export interface CreateUserInput {
   email: string;
   passwordHash: string;
-  name: string;
+  fullName: string;
+  role: UserRole;
   locale?: Locale;
+  phone?: string;
 }
 
 export class UserRepository {
@@ -24,8 +26,10 @@ export class UserRepository {
       data: {
         email: input.email.toLowerCase(),
         passwordHash: input.passwordHash,
-        name: input.name,
-        locale: input.locale ?? 'en',
+        fullName: input.fullName,
+        role: input.role,
+        locale: input.locale ?? 'tr',
+        phone: input.phone,
       },
     });
   }

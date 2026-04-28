@@ -1,4 +1,5 @@
-// Prisma schema for FitTrack API.
+// Prisma schema — Futbol Antrenör/Oyuncu Platformu
+// Hedef: alt lig + akademi (TFF 2./3. Lig, BAL, U13–A takım)
 // Run `pnpm --filter @fittrack/api db:generate` after editing.
 
 generator client {
@@ -10,141 +11,249 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// ENUMS
+// ============================================================
+
 enum Locale {
-  en
   tr
+  en
 }
 
-enum UnitSystem {
-  metric
-  imperial
+enum UserRole {
+  coach
+  player
 }
 
-enum Gender {
-  male
-  female
+enum TeamCategory {
+  u13
+  u14
+  u15
+  u16
+  u17
+  u18
+  u19
+  u21
+  senior // A takım
+  amateur
+  veteran
+}
+
+enum PositionGroup {
+  goalkeeper
+  defender
+  midfielder
+  forward
+}
+
+enum DetailedPosition {
+  GK
+  CB
+  LB
+  RB
+  LWB
+  RWB
+  CDM
+  CM
+  CAM
+  LM
+  RM
+  LW
+  RW
+  ST
+  CF
+  SS
+}
+
+enum Foot {
+  left
+  right
+  both
+}
+
+enum EmploymentStatus {
+  full_time_pro // tam zamanlı profesyonel
+  semi_pro // yarı profesyonel
+  amateur // amatör
+  student // öğrenci
+  working // gündüz işi var
+}
+
+enum LicenseLevel {
+  none
+  tff_grassroots
+  tff_d
+  tff_c
+  tff_b
+  tff_a
+  uefa_c
+  uefa_b
+  uefa_a
+  uefa_pro
+}
+
+enum AvailabilityStatus {
+  ready // hazır
+  doubtful // şüphe (hafif rahatsızlık)
+  limited // kısıtlı (yarı şiddet)
+  injured // sakat
+  ill // hasta
+  suspended // cezalı
+  away // izinli/yok
+}
+
+enum InjurySeverity {
+  minor // 1-7 gün
+  moderate // 1-3 hafta
+  major // 3-6 hafta
+  severe // 6+ hafta
+}
+
+enum InjuryType {
+  muscle
+  ligament
+  joint
+  bone
+  tendon
+  concussion
   other
-  prefer_not_to_say
 }
 
-enum Goal {
-  lose_fat
-  gain_muscle
-  maintain
-  general_fitness
+enum TrainingCategory {
+  endurance // dayanıklılık
+  sprint_agility // sürat - çeviklik
+  strength // kuvvet
+  plyometric // pliometrik / sıçrama
+  technical // teknik (top, pas, şut, dribling)
+  tactical // taktik
+  goalkeeper_specific // kaleci özel
+  recovery // toparlanma
+  warmup // ısınma
+  cooldown // soğuma
+  small_sided_game // mini maç (3v3, 5v5...)
+  set_piece // duran top
 }
 
-enum PrMetric {
-  one_rep_max
-  best_set_weight
-  best_set_reps
-  best_time
-  best_distance
+enum ExerciseLocation {
+  field // doğal/yapay saha
+  indoor_pitch // kapalı saha
+  gym // ağırlık salonu
+  bodyweight_anywhere // her yerde, ekipman yok
+  pool // havuz (rehab)
+  home
 }
 
-enum ProgramLevel {
-  beginner
-  intermediate
-  advanced
+enum MicrocycleType {
+  match_week // normal maç haftası
+  preseason // hazırlık dönemi
+  recovery_week // dinlenme haftası
+  off_season // sezon arası
 }
 
-enum ProgramEquipment {
-  bodyweight_only
-  dumbbell_only
-  full_gym
+enum SessionType {
+  team // tüm takım birlikte
+  individual // tek oyuncu
+  position_group // mevki bazlı (örn. defansa özel)
+  recovery // bireysel toparlanma
 }
 
-model Program {
-  id            String   @id @default(uuid())
-  userId        String
-  name          String
-  goal          Goal
-  level         ProgramLevel
-  equipment     ProgramEquipment
-  daysPerWeek   Int
-  sessionMinutes Int
-  targetMuscles String[]
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  days ProgramDay[]
-
-  @@index([userId, active])
+enum FacilityType {
+  natural_grass
+  artificial_turf
+  indoor_pitch
+  gym
+  weight_room
+  sprint_track
+  pool
+  recovery_room
 }
 
-model ProgramDay {
-  id        String @id @default(uuid())
-  programId String
-  dayIndex  Int
-  name      String
-  exercises Json
-
-  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
-
-  @@unique([programId, dayIndex])
+enum EquipmentItem {
+  // ağırlık
+  barbell
+  dumbbell
+  kettlebell
+  bench
+  squat_rack
+  pull_up_bar
+  // direnç & yardımcı
+  resistance_band
+  medicine_ball
+  trx
+  swiss_ball
+  bosu
+  weighted_vest
+  speed_parachute
+  // saha
+  cones
+  agility_ladder
+  hurdles
+  plyo_box
+  goal
+  rebounder
+  mannequin // duran top kuklası
+  // kardiyo makinesi
+  rowing_machine
+  treadmill
+  stationary_bike
 }
 
-enum ActivityLevel {
-  sedentary
-  light
-  moderate
-  active
-  very_active
+enum AttendanceStatus {
+  present
+  absent
+  late
+  excused
 }
 
-model NutritionPlan {
-  id             String        @id @default(uuid())
-  userId         String
-  name           String
-  goal           Goal
-  activityLevel  ActivityLevel
-  gender         Gender
-  age            Int
-  heightCm       Float
-  weightKg       Float
-  bmr            Int
-  tdee           Int
-  targetKcal     Int
-  proteinG       Int
-  carbsG         Int
-  fatG           Int
-  meals          Json
-  active         Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, active])
+enum PerformanceTestType {
+  sprint_10m
+  sprint_20m
+  sprint_30m
+  agility_505
+  agility_t_test
+  yo_yo_ir1
+  yo_yo_ir2
+  beep_test
+  cooper_test
+  vertical_jump
+  broad_jump
+  bench_press_1rm
+  squat_1rm
+  pull_ups_max
+  push_ups_max
+  flexibility_sit_reach
+  body_fat_percent
 }
+
+// ============================================================
+// AUTH & USER
+// ============================================================
 
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String
-  name         String
-  locale       Locale   @default(en)
-  unitSystem   UnitSystem @default(metric)
+  fullName     String
+  role         UserRole
+  locale       Locale   @default(tr)
+  phone        String?
+  avatarUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  profile        Profile?
-  workouts       Workout[]
-  templates      Template[]
-  prs            PersonalRecord[]
+  coach          Coach?
+  playerProfile  Player?        @relation("PlayerUser")
+  createdPlayers Player[]       @relation("CreatedPlayers")
   refreshTokens  RefreshToken[]
-  programs       Program[]
-  nutritionPlans NutritionPlan[]
+  sentInvites    Invite[]       @relation("InvitedBy")
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  tokenHash String   @unique
+  tokenHash String    @unique
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   revokedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -152,90 +261,406 @@ model RefreshToken {
   @@index([userId])
 }
 
-model Profile {
-  userId    String   @id
-  heightCm  Float?
-  weightKg  Float?
-  age       Int?
-  gender    Gender?
-  goal      Goal?
-  updatedAt DateTime @updatedAt
+// ============================================================
+// CLUB & STAFF (akademi modeli)
+// ============================================================
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Club {
+  id          String   @id @default(uuid())
+  name        String
+  city        String?
+  league      String? // örn. "BAL 4. Grup", "TFF 3. Lig"
+  foundedYear Int?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  coaches    Coach[]
+  teams      Team[]
+  players    Player[]    @relation("ClubPlayers")
+  facilities Facility[]
+  inventory  Equipment[]
+  invites    Invite[]
 }
 
-model Template {
-  id        String   @id @default(uuid())
-  userId    String
-  name      String
+model Coach {
+  userId       String       @id
+  clubId       String?
+  licenseLevel LicenseLevel @default(none)
+  isClubAdmin  Boolean      @default(false) // kulüp yöneticisi yetkisi
+  bio          String?
+  createdAt    DateTime     @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club Club? @relation(fields: [clubId], references: [id], onDelete: SetNull)
+
+  teamMemberships CoachTeam[]
+
+  @@index([clubId])
+}
+
+model CoachTeam {
+  coachId   String
+  teamId    String
+  role      String? // "head_coach", "assistant", "fitness", "gk_coach"
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exercises TemplateExercise[]
-  workouts  Workout[]
+  coach Coach @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  team  Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@id([coachId, teamId])
+  @@index([teamId])
 }
 
-model TemplateExercise {
-  id         String @id @default(uuid())
-  templateId String
-  exerciseId String
-  order      Int
-  targetSets Int?
-  targetReps Int?
+model Team {
+  id        String       @id @default(uuid())
+  clubId    String
+  name      String
+  category  TeamCategory
+  season    String // "2026-2027"
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  club     Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  coaches  CoachTeam[]
+  roster   TeamPlayer[]
+  matches  Match[]
+  programs TrainingProgram[]
+  invites  Invite[]
 
-  @@index([templateId])
+  @@index([clubId, active])
 }
 
-model Workout {
-  id         String    @id @default(uuid())
-  userId     String
-  templateId String?
-  name       String?
-  notes      String?
-  startedAt  DateTime  @default(now())
-  finishedAt DateTime?
-  createdAt  DateTime  @default(now())
+// Antrenör tarafından oluşturulan davet kodu/linki ile oyuncu kayıt olur.
+// Player profili önceden oluşturulmuşsa playerId set edilir; oyuncu daveti
+// kabul edince Player.userId bağlanır.
+model Invite {
+  id          String    @id @default(uuid())
+  code        String    @unique // 6-8 hane, oyuncu girer
+  invitedById String // antrenör user id
+  clubId      String
+  teamId      String?
+  playerId    String?   @unique // önceden oluşturulmuş player profili
+  email       String? // önceden biliniyorsa
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  acceptedBy  String? // kabul eden user id
+  createdAt   DateTime  @default(now())
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  sets     WorkoutSet[]
+  invitedBy User    @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  club      Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  team      Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  player    Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
 
-  @@index([userId, startedAt])
+  @@index([clubId])
+  @@index([teamId])
 }
 
-model WorkoutSet {
-  id             String    @id @default(uuid())
-  workoutId      String
-  exerciseId     String
-  order          Int
-  weightKg       Float?
-  reps           Int?
-  timeSeconds    Int?
-  distanceMeters Int?
-  rpe            Float?
-  completedAt    DateTime?
+// ============================================================
+// PLAYER
+// ============================================================
 
-  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+// Player profili antrenör tarafından oluşturulur (User olmadan da var olabilir).
+// Oyuncu daveti kabul edince userId set edilir.
+model Player {
+  id                String            @id @default(uuid())
+  userId            String?           @unique
+  clubId            String // oyuncu hangi kulübe ait
+  createdById       String // hangi antrenör oluşturdu
+  birthDate         DateTime          @db.Date
+  position          PositionGroup
+  detailedPosition  DetailedPosition?
+  secondaryPosition DetailedPosition?
+  preferredFoot     Foot
+  heightCm          Float
+  weightKg          Float
+  jerseyNumber      Int?
+  employmentStatus  EmploymentStatus  @default(amateur)
+  fullName          String // user hesabı yokken görünen isim
+  joinedAt          DateTime          @default(now())
+  notes             String? // koçun oyuncu hakkında özel notları
 
-  @@index([workoutId, order])
+  user      User? @relation("PlayerUser", fields: [userId], references: [id], onDelete: SetNull)
+  club      Club  @relation("ClubPlayers", fields: [clubId], references: [id], onDelete: Cascade)
+  createdBy User  @relation("CreatedPlayers", fields: [createdById], references: [id], onDelete: Restrict)
+
+  teamMemberships  TeamPlayer[]
+  availabilities   PlayerAvailability[]
+  injuries         InjuryRecord[]
+  programs         TrainingProgram[]
+  attendance       TrainingAttendance[]
+  sessionLogs      SessionLog[]
+  performanceTests PerformanceTestResult[]
+  matchAppearances MatchAppearance[]
+  invite           Invite? // playerId üzerinden tek invite
+
+  @@index([clubId])
+  @@index([createdById])
+}
+
+model TeamPlayer {
+  teamId    String
+  playerId  String
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  isCaptain Boolean   @default(false)
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, playerId])
+  @@index([playerId])
+}
+
+model PlayerAvailability {
+  id        String             @id @default(uuid())
+  playerId  String
+  date      DateTime           @db.Date
+  status    AvailabilityStatus
+  note      String?
+  createdAt DateTime           @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, date])
+  @@index([playerId, date])
+}
+
+model InjuryRecord {
+  id             String         @id @default(uuid())
+  playerId       String
+  type           InjuryType
+  severity       InjurySeverity
+  bodyPart       String // "sol hamstring", "sağ ayak bileği"
+  startedAt      DateTime
+  expectedReturn DateTime?
+  resolvedAt     DateTime?
+  description    String?
+  createdAt      DateTime       @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, resolvedAt])
+}
+
+// ============================================================
+// FACILITY & EQUIPMENT (engine girdisi)
+// ============================================================
+
+model Facility {
+  id     String       @id @default(uuid())
+  clubId String
+  type   FacilityType
+  name   String
+  notes  String?
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+}
+
+model Equipment {
+  id       String        @id @default(uuid())
+  clubId   String
+  item     EquipmentItem
+  quantity Int           @default(1)
+  notes    String?
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, item])
+  @@index([clubId])
+}
+
+// ============================================================
+// EXERCISE LIBRARY (engine bunu filtreliyor)
+// ============================================================
+
+model Exercise {
+  id                     String             @id @default(uuid())
+  slug                   String             @unique // seed idempotency
+  nameTr                 String
+  nameEn                 String
+  category               TrainingCategory
+  description            String?
+  videoUrl               String?
+  thumbnailUrl           String?
+  primaryMuscles         String[] // ["quadriceps", "hamstring"]
+  positionsTargeted      PositionGroup[] // boş = herkese uygun
+  minAge                 Int?
+  maxAge                 Int?
+  requiredEquipment      EquipmentItem[] // hepsi gerekli (AND)
+  locations              ExerciseLocation[]
+  difficulty             Int                @default(1) // 1-5
+  defaultSets            Int?
+  defaultReps            Int?
+  defaultDurationSeconds Int?
+  defaultDistanceMeters  Int?
+  defaultRestSeconds     Int?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  sessionExercises SessionExercise[]
+
+  @@index([category])
+}
+
+// ============================================================
+// TRAINING PROGRAM (engine üretir)
+// ============================================================
+
+model TrainingProgram {
+  id               String         @id @default(uuid())
+  // playerId XOR teamId — bireysel veya takım programı
+  playerId         String?
+  teamId           String?
+  weekStartDate    DateTime       @db.Date // pazartesi
+  matchDayOfWeek   Int? // 0=pzt ... 6=pzr; haftanın maç günü
+  microcycleType   MicrocycleType @default(match_week)
+  generatedBy      String // "rule_engine_v1" veya coachId
+  generationInputs Json // engine girdileri snapshot — audit/debug
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  player   Player?           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  team     Team?             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  sessions TrainingSession[]
+
+  @@index([playerId, weekStartDate])
+  @@index([teamId, weekStartDate])
+}
+
+model TrainingSession {
+  id              String           @id @default(uuid())
+  programId       String
+  date            DateTime         @db.Date
+  type            SessionType
+  category        TrainingCategory // o günün ana odağı
+  durationMinutes Int
+  intensity       Int // 1-5
+  notes           String?
+  createdAt       DateTime         @default(now())
+
+  program    TrainingProgram      @relation(fields: [programId], references: [id], onDelete: Cascade)
+  exercises  SessionExercise[]
+  attendance TrainingAttendance[]
+  logs       SessionLog[]
+
+  @@index([programId, date])
+}
+
+model SessionExercise {
+  id              String  @id @default(uuid())
+  sessionId       String
+  exerciseId      String
+  order           Int
+  sets            Int?
+  reps            Int?
+  durationSeconds Int?
+  distanceMeters  Int?
+  restSeconds     Int?
+  intensity       Int? // 1-5 egzersiz bazında
+  notes           String?
+
+  session  TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exercise Exercise        @relation(fields: [exerciseId], references: [id])
+
+  @@index([sessionId, order])
   @@index([exerciseId])
 }
 
-model PersonalRecord {
+model TrainingAttendance {
+  id        String           @id @default(uuid())
+  sessionId String
+  playerId  String
+  status    AttendanceStatus
+  arrivedAt DateTime?
+  note      String?
+  createdAt DateTime         @default(now())
+
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  player  Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, playerId])
+  @@index([playerId])
+}
+
+model SessionLog {
+  id         String   @id @default(uuid())
+  sessionId  String
+  playerId   String
+  rpe        Int? // 1-10 algılanan zorluk
+  fatigue    Int? // 1-5
+  mood       Int? // 1-5
+  sleepHours Float?
+  notes      String?
+  loggedAt   DateTime @default(now())
+
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  player  Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, playerId])
+  @@index([playerId])
+}
+
+// ============================================================
+// PERFORMANCE TEST
+// ============================================================
+
+model PerformanceTestResult {
+  id       String              @id @default(uuid())
+  playerId String
+  type     PerformanceTestType
+  value    Float
+  unit     String // "s", "cm", "kg", "level", "reps"
+  testedAt DateTime            @default(now())
+  notes    String?
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, type, testedAt])
+}
+
+// ============================================================
+// MATCH (skeleton — engine MD-X için sadece tarihe ihtiyaç duyar)
+// ============================================================
+
+model Match {
   id          String   @id @default(uuid())
-  userId      String
-  exerciseId  String
-  metric      PrMetric
-  value       Float
-  achievedAt  DateTime @default(now())
+  teamId      String
+  opponent    String
+  date        DateTime
+  isHome      Boolean
+  competition String? // "Lig", "Kupa"
+  scoreUs     Int?
+  scoreThem   Int?
+  notes       String?
+  createdAt   DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team        Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  appearances MatchAppearance[]
 
-  @@unique([userId, exerciseId, metric])
-  @@index([userId])
+  @@index([teamId, date])
+}
+
+model MatchAppearance {
+  id          String  @id @default(uuid())
+  matchId     String
+  playerId    String
+  startingXi  Boolean @default(false)
+  minutes     Int     @default(0)
+  goals       Int     @default(0)
+  assists     Int     @default(0)
+  yellowCards Int     @default(0)
+  redCards    Int     @default(0)
+  rating      Float?
+  notes       String?
+
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, playerId])
+  @@index([playerId])
 }

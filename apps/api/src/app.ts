@@ -7,9 +7,6 @@ import { AppError } from './lib/errors.js';
 import authPlugin from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
 import { authRoutes } from './routes/auth.js';
-import { workoutRoutes } from './routes/workouts.js';
-import { programRoutes } from './routes/programs.js';
-import { nutritionRoutes } from './routes/nutrition.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -84,9 +81,6 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes);
   await app.register(authRoutes);
-  await app.register(workoutRoutes);
-  await app.register(programRoutes);
-  await app.register(nutritionRoutes);
 
   return app;
 }

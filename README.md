@@ -1,142 +1,103 @@
-# FitTrack
+# fittrack
 
-Kişisel fitness takip uygulaması. Flutter mobile + Fastify/PostgreSQL backend.
+Alt lig + akademi futbol antrenörleri için "antrenör + oyuncu" platformu. Antrenör oyuncu profillerini ve kulüp kaynaklarını girer, kural tabanlı engine her oyuncuya **haftalık antrenman programı** üretir. Oyuncu telefonundan programını görür, RPE / katılım girer.
 
-> Vizyon, kapsam ve roadmap için [GDD.md](./GDD.md).
-> Agent çalışma kuralları için [CONTEXT.md](./CONTEXT.md).
+> Vizyon ve faz planı: [GDD.md](./GDD.md)
+> Agent çalışma kuralları: [CONTEXT.md](./CONTEXT.md)
 
 ## Mimari
 
 ```
 fittrack/
 ├── apps/
-│   ├── api/        Fastify + Prisma + PostgreSQL (TypeScript)
-│   └── mobile/     Flutter + Riverpod + go_router + Material 3 (Dart)
+│   └── api/                          # Fastify + Prisma + Postgres (TypeScript)
+│       ├── src/
+│       │   ├── routes/               # Fastify route handler'lar
+│       │   ├── services/             # business logic
+│       │   │   ├── auth.service.ts
+│       │   │   └── program-engine/   # kural tabanlı program üretici
+│       │   ├── repositories/         # Prisma wrapper'lar
+│       │   ├── plugins/auth.ts       # requireAuth hook
+│       │   └── lib/                  # env, errors, prisma, password, tokens
+│       ├── prisma/
+│       │   ├── schema.prisma
+│       │   ├── seed.ts
+│       │   └── seed/exercises.ts     # ~190 futbol egzersizi
+│       └── test/                     # vitest
 └── packages/
-    ├── shared/        Zod schemas + paylaşımlı tipler (backend)
-    └── exercise-db/   Egzersiz veritabanı (backend + mobile asset kaynağı)
+    └── shared/                       # @fittrack/shared (Zod schemas + types)
 ```
 
-Backend ve paketler pnpm workspace'i; mobile bağımsız bir Flutter projesi (pub ile bağımlılık yönetir). Mobile, `packages/exercise-db`'den `exercises.json`'u build zamanında `assets/`'e kopyalar.
+Frontend stack kararı henüz verilmedi — bu repo şimdilik **API + engine + test** içerir.
 
 ## Ön gereksinimler
 
 - Node.js 20+ (`.nvmrc`)
 - pnpm 10+
-- PostgreSQL 15+ (lokal veya Docker)
-- Flutter 3.41+ / Dart 3.11+
-- Android Studio (Android emülatör/cihaz için) ya da bağlı Android telefon
-- iOS build için macOS + Xcode
+- PostgreSQL 17 (lokal: `localhost:5432`, db: `fittrack`)
 
 Kontrol:
 ```cmd
 node --version
 pnpm --version
-flutter --version
-flutter doctor
 ```
 
 ## İlk kurulum
-
-### Backend + paketler
 
 ```cmd
 pnpm install
 copy apps\api\.env.example apps\api\.env
 ```
-`apps/api/.env` içindeki `JWT_SECRET`, `JWT_REFRESH_SECRET`, `DATABASE_URL` değerlerini doldur.
+
+`apps/api/.env` içine `JWT_SECRET`, `JWT_REFRESH_SECRET`, `DATABASE_URL` doldur.
+
+Postgres lokal başlatma (servis modu):
+```powershell
+"C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" -D "$env:USERPROFILE\dev\pgdata" start
+```
 
 Prisma:
 ```cmd
 pnpm --filter @fittrack/api db:generate
 pnpm --filter @fittrack/api db:push
+pnpm --filter @fittrack/api db:seed
 ```
 
-### Mobile
-
-```cmd
-cd apps\mobile
-flutter pub get
-flutter gen-l10n
-```
-
-İsteğe bağlı env:
-```cmd
-copy apps\mobile\.env.example apps\mobile\.env
-```
+Seed `upsert` ile idempotent — yeniden çalıştırmak güvenli.
 
 ## Geliştirme
 
-Backend (3000 portu):
 ```cmd
 pnpm dev:api
 ```
 Test: `curl http://localhost:3000/health`
 
-Mobile (Android/iOS):
+Hızlı doğrulama (typecheck + vitest + api start):
 ```cmd
-pnpm dev:mobile
+dev.bat
 ```
-Özel API URL ile:
-```cmd
-cd apps\mobile
-flutter run --dart-define=API_URL=http://10.0.2.2:3000
-```
-> Android emülatörden `localhost` backend'e erişmek için `10.0.2.2` kullan.
-> `.env` dosyasıyla: `flutter run --dart-define-from-file=.env`
+Sadece kontroller: `dev.bat check`
 
 ## Kalite kontrolleri
 
-Backend + paketler:
 ```cmd
 pnpm typecheck
-pnpm lint
+pnpm test:api
 pnpm format:check
 ```
 
-Mobile:
+## DB iş akışları
+
 ```cmd
-pnpm mobile:analyze
-pnpm mobile:format
+pnpm --filter @fittrack/api db:studio       # Prisma Studio
+pnpm --filter @fittrack/api db:migrate      # migration üret + uygula (dev)
+pnpm --filter @fittrack/api db:seed         # egzersizleri upsert et
 ```
 
-i18n regenerate (ARB değişince):
-```cmd
-pnpm mobile:l10n
-```
+> Production'a yaklaşırken `db:push` yerine `db:migrate` kullan — migration history isteriz.
 
-Android APK:
-```cmd
-pnpm mobile:build:android
-```
+## Engine
 
-## Klasör haritası (mobile)
+`apps/api/src/services/program-engine/` — kural tabanlı haftalık program üretici. Akış ve kalibrasyon notları için: [program-engine/README.md](./apps/api/src/services/program-engine/README.md).
 
-```
-apps/mobile/
-├── lib/
-│   ├── main.dart
-│   ├── core/
-│   │   ├── api/          # dio client + auth interceptor
-│   │   ├── i18n/         # locale controller
-│   │   ├── router/       # go_router config
-│   │   ├── storage/      # secure storage + preferences
-│   │   ├── theme/        # Material 3 + FitTrackColors extension
-│   │   └── env.dart      # compile-time env
-│   ├── features/
-│   │   ├── auth/         # application, domain, presentation
-│   │   └── landing/
-│   └── l10n/
-│       ├── app_en.arb
-│       ├── app_tr.arb
-│       └── generated/    # AppLocalizations (gen-l10n çıktısı)
-├── assets/
-│   └── exercises.json
-├── l10n.yaml
-└── pubspec.yaml
-```
-
-## Dokümantasyon
-
-- [GDD.md](./GDD.md) — vizyon, kapsam, faz planı
-- [CONTEXT.md](./CONTEXT.md) — agent ve geliştirme kuralları
+Versiyon: `rule_engine_v1`. Eski programlar `TrainingProgram.generationInputs` snapshot'ı ile audit için saklanır.

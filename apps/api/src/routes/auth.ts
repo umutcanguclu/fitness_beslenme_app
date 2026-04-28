@@ -1,5 +1,9 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { LoginInputSchema, RegisterInputSchema } from '@fittrack/shared';
+import {
+  LoginInputSchema,
+  RegisterCoachInputSchema,
+  RegisterPlayerInputSchema,
+} from '@fittrack/shared';
 import { z } from 'zod';
 import { AppError } from '../lib/errors.js';
 import { authService } from '../services/auth.service.js';
@@ -9,9 +13,15 @@ const RefreshInputSchema = z.object({
 });
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
-  app.post('/auth/register', async (request, reply) => {
-    const input = RegisterInputSchema.parse(request.body);
-    const result = await authService.register(input);
+  app.post('/auth/register/coach', async (request, reply) => {
+    const input = RegisterCoachInputSchema.parse(request.body);
+    const result = await authService.registerCoach(input);
+    return reply.code(201).send(result);
+  });
+
+  app.post('/auth/register/player', async (request, reply) => {
+    const input = RegisterPlayerInputSchema.parse(request.body);
+    const result = await authService.registerPlayer(input);
     return reply.code(201).send(result);
   });
 
@@ -22,8 +32,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
   app.post('/auth/refresh', async (request) => {
     const { refreshToken } = RefreshInputSchema.parse(request.body);
-    const tokens = await authService.refresh(refreshToken);
-    return tokens;
+    return authService.refresh(refreshToken);
   });
 
   app.post('/auth/logout', async (request, reply) => {
