@@ -86,7 +86,10 @@
       "PowerShell(node --version)",
       "PowerShell(npm --version)",
       "PowerShell(npx --version)",
-      "Bash(node_modules/.bin/tsc.cmd --noEmit)"
+      "Bash(node_modules/.bin/tsc.cmd --noEmit)",
+      "Bash(node_modules/.bin/vitest.cmd run *)",
+      "Bash(pnpm --filter @fittrack/api dev)",
+      "PowerShell(pnpm *)"
     ]
   }
 }

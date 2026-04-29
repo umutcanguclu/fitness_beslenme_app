@@ -86,6 +86,27 @@ pnpm test:api
 pnpm format:check
 ```
 
+### Entegrasyon testleri için ayrı test DB
+
+`pnpm test:api` varsayılan olarak yalnızca unit testleri koşar (lib/password, lib/tokens). Entegrasyon testleri (auth flow, program generation) `DATABASE_URL_TEST` ortam değişkeni olmadan otomatik skip olur.
+
+Ayrı bir test veritabanı oluşturduktan sonra:
+
+```powershell
+# 1) Test DB oluştur (bir defalık)
+"C:\Program Files\PostgreSQL\17\bin\createdb.exe" -U postgres fittrack_test
+
+# 2) Schema'yı push et
+$env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/fittrack_test?schema=public"
+pnpm --filter @fittrack/api db:push
+
+# 3) Test DB'sini test koşumlarında kullan
+$env:DATABASE_URL_TEST = "postgresql://postgres:postgres@localhost:5432/fittrack_test?schema=public"
+pnpm test:api
+```
+
+Test setup'ı her testten önce User + Club tablolarını CASCADE truncate eder; Exercise tablosu (referans veri) korunur ve boşsa otomatik seed'lenir.
+
 ## DB iş akışları
 
 ```cmd

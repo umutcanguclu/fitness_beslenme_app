@@ -26,11 +26,12 @@ export const PlayerSchema = z.object({
 export type Player = z.infer<typeof PlayerSchema>;
 
 // Antrenör tarafından oyuncu profili oluşturmak için (oyuncu sonra davet kodu ile login olur).
+// email opsiyonel: küçük yaş akademi oyuncularında genelde sonradan veli mail'i girilir.
 export const CreatePlayerProfileInputSchema = PlayerSchema.omit({
   userId: true,
   joinedAt: true,
 }).extend({
-  email: z.string().email(),
+  email: z.string().email().optional(),
   fullName: z.string().min(1).max(120),
   teamId: z.string().uuid(),
 });

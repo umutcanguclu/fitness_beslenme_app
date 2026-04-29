@@ -161,6 +161,7 @@ function exerciseCountFor(category: string, intensity: number): number {
   if (category === 'recovery') return 2;
   if (category === 'small_sided_game') return 1;
   if (category === 'set_piece') return 2;
+  if (category === 'goalkeeper_specific') return 3;
   // Ana iş bloğu: şiddete göre 2-4 egzersiz
   return Math.max(2, Math.min(4, Math.round(intensity)));
 }

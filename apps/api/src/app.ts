@@ -7,6 +7,12 @@ import { AppError } from './lib/errors.js';
 import authPlugin from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
 import { authRoutes } from './routes/auth.js';
+import { clubRoutes } from './routes/clubs.js';
+import { teamRoutes } from './routes/teams.js';
+import { playerRoutes } from './routes/players.js';
+import { programRoutes } from './routes/programs.js';
+import { matchRoutes } from './routes/matches.js';
+import { performanceTestRoutes } from './routes/performance-tests.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -81,6 +87,12 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes);
   await app.register(authRoutes);
+  await app.register(clubRoutes);
+  await app.register(teamRoutes);
+  await app.register(playerRoutes);
+  await app.register(programRoutes);
+  await app.register(matchRoutes);
+  await app.register(performanceTestRoutes);
 
   return app;
 }

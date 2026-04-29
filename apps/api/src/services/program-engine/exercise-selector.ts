@@ -34,10 +34,17 @@ export async function selectExercisesForCategory(
   });
 
   const usable = candidates.filter((ex) => isUsable(ex, input));
-  // Şimdilik basit: zorlukla artan, sonra rastgele tie-break.
-  // Sonra: çeşitlilik (önceki haftaları, primaryMuscles çakışmasını) hesaba kat.
-  const shuffled = [...usable].sort((a, b) => a.difficulty - b.difficulty + (Math.random() - 0.5));
-  return shuffled.slice(0, input.limit);
+  // Mevki-spesifik (positionsTargeted'ında oyuncunun mevkisi olan) egzersizler önce.
+  // Bu şekilde GK için goalkeeper_specific kategorisinde gerçekten GK egzersizleri seçilir,
+  // ST/forward için technical kategorisindeki shooting drilller'ı önce gelir.
+  const targeted = usable.filter((ex) => ex.positionsTargeted.includes(input.player.position));
+  const generic = usable.filter((ex) => !ex.positionsTargeted.includes(input.player.position));
+  const ranked = [...rankByDifficulty(targeted), ...rankByDifficulty(generic)];
+  return ranked.slice(0, input.limit);
+}
+
+function rankByDifficulty(items: Exercise[]): Exercise[] {
+  return [...items].sort((a, b) => a.difficulty - b.difficulty + (Math.random() - 0.5));
 }
 
 function isUsable(ex: Exercise, input: SelectInput): boolean {

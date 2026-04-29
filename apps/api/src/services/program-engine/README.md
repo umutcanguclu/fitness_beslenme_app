@@ -27,23 +27,39 @@ generateProgram(input)
 
 ## TODO (kalibre edilmesi gerekenler)
 
-- [ ] Mevki bazlı **özel** dağılım (kalecinin programı çoğunlukla `goalkeeper_specific` olmalı; santrafora şut ağırlıklı)
-- [ ] `position_group` session tipi (defansa özel duran top, vs.)
-- [ ] Yaş bazlı şiddet eğrisi (U13'te yüksek hacim ÇOK riskli — limit koy)
+- [x] **Mevki bazlı özel dağılım**: kaleci için takım çalışması yerine `goalkeeper_specific` (small_sided_game/tactical/technical → goalkeeper_specific substitusyonu)
+- [x] **Yaş bazlı şiddet eğrisi**: <14 yaş şiddet max 3 + süre max 70 dk; 14-15 yaş şiddet max 4 + süre max 80 dk
+- [x] **Akıllı sıralama**: `CATEGORY_PRIORITY` ile warmup ilk, recovery yakın, cooldown son
+- [x] **Preseason ve recovery_week template'leri**: `pickDayBase` microcycleType'a göre uygun şablonu seçer
+- [x] **Position-aware exercise ranking**: selector mevki-spesifik egzersizleri (positionsTargeted'da oyuncunun mevkisi olanları) önce sıralar
+- [ ] `position_group` session tipi (defansa özel duran top — takım programı geldiğinde)
 - [ ] Egzersiz çeşitliliği skoru (önceki haftaları kontrol et, primaryMuscle çakışmasını azalt)
-- [ ] Akıllı sıralama: warmup ilk, cooldown son, ana iş bloğu ortada
 - [ ] Microcycle bütünlüğü: haftalık toplam hacim hedefi (örn. 280 dk, MD'ye göre dağıt)
-- [ ] `preseason` ve `recovery_week` template'leri
 - [ ] `team` programı (sadece bireysel değil, takım antrenmanı)
 - [ ] Engine snapshot'ı vs. ürün state diff'i (programı yeniden ürettiğinde değişimi göster)
 
 ## Çıktıyı DB'ye yazmak
 
-Engine sadece `GeneratedProgram` döner. `program-writer.ts` (henüz yazılmadı) bunu alıp:
+`program-writer.ts` `GeneratedProgram`'ı alıp:
 
-1. `TrainingProgram` row'u oluşturur (`generationInputs` JSON snapshot'ı içinde)
-2. Her `GeneratedSession` için `TrainingSession` + `SessionExercise` insert eder
-3. Aynı playerId+weekStartDate için varsa eski programı archive eder/değiştirir
+1. Aynı `playerId+weekStartDate` için var olan `TrainingProgram`'ı **siler** (cascade ile sessions/exercises/attendance/logs).
+2. Yeni `TrainingProgram` oluşturur (`generationInputs` JSON snapshot içinde, audit için).
+3. Her `GeneratedSession` için `TrainingSession` + sıralı `SessionExercise` nested-create eder.
+4. Tek transaction içinde — kısmi yazıma izin yok.
+
+İki kullanım:
+
+```ts
+// Engine + DB tek seferde
+const written = await generateAndWriteProgram({ playerId, weekStartDate }, db);
+
+// Veya iki adım (örn. preview)
+const generated = await generateProgram(input, db);
+// ... preview / değişiklik ...
+const written = await writeProgram(generated, { playerId }, db);
+```
+
+**Replace stratejisi notu:** hafta içinde program yeniden üretilirse o haftanın attendance/RPE kayıtları kaybolur. UI katmanında "X kayıt silinecek" uyarısı planlanıyor.
 
 ## Versiyonlama
 
