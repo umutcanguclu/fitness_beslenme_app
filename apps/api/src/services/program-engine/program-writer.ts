@@ -2,6 +2,8 @@ import type {
   Prisma,
   PrismaClient,
   SessionExercise,
+  SessionLog,
+  TrainingAttendance,
   TrainingProgram,
   TrainingSession,
 } from '@prisma/client';
@@ -9,8 +11,24 @@ import { prisma } from '../../lib/prisma.js';
 import { generateProgram } from './index.js';
 import { ENGINE_VERSION, type EngineInput, type GeneratedProgram } from './types.js';
 
+export interface ExerciseSummary {
+  id: string;
+  slug: string;
+  nameTr: string;
+  nameEn: string;
+  category: string;
+  description: string | null;
+  requiredEquipment: string[];
+  thumbnailUrl: string | null;
+  imageUrls: string[];
+}
+
 export type WrittenProgram = TrainingProgram & {
-  sessions: (TrainingSession & { exercises: SessionExercise[] })[];
+  sessions: (TrainingSession & {
+    exercises: (SessionExercise & { exercise: ExerciseSummary })[];
+    logs: SessionLog[];
+    attendance: TrainingAttendance[];
+  })[];
 };
 
 export interface WriteProgramOptions {
@@ -65,7 +83,28 @@ export async function writeProgram(
       },
       include: {
         sessions: {
-          include: { exercises: { orderBy: { order: 'asc' } } },
+          include: {
+            exercises: {
+              orderBy: { order: 'asc' },
+              include: {
+                exercise: {
+                  select: {
+                    id: true,
+                    slug: true,
+                    nameTr: true,
+                    nameEn: true,
+                    category: true,
+                    description: true,
+                    requiredEquipment: true,
+                    thumbnailUrl: true,
+                    imageUrls: true,
+                  },
+                },
+              },
+            },
+            logs: true,
+            attendance: true,
+          },
           orderBy: { date: 'asc' },
         },
       },

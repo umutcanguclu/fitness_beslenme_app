@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import {
+  LoginByCodeInputSchema,
   LoginInputSchema,
   RegisterCoachInputSchema,
   RegisterPlayerInputSchema,
 } from '@fittrack/shared';
 import { z } from 'zod';
 import { AppError } from '../lib/errors.js';
+import { prisma } from '../lib/prisma.js';
 import { authService } from '../services/auth.service.js';
 
 const RefreshInputSchema = z.object({
@@ -30,6 +32,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     return authService.login(input);
   });
 
+  app.post('/auth/login/code', async (request) => {
+    const { code } = LoginByCodeInputSchema.parse(request.body);
+    return authService.loginWithCode(code);
+  });
+
   app.post('/auth/refresh', async (request) => {
     const { refreshToken } = RefreshInputSchema.parse(request.body);
     return authService.refresh(refreshToken);
@@ -45,5 +52,17 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     const userId = request.authUser?.sub;
     if (!userId) throw AppError.unauthorized();
     return authService.getById(userId);
+  });
+
+  // Oyuncu rolündeki kullanıcı kendi Player.id'sini buradan alır.
+  // /my-program gibi UI sayfaları için.
+  app.get('/auth/me/player', { preHandler: app.requireAuth }, async (request) => {
+    const userId = request.authUser?.sub;
+    if (!userId) throw AppError.unauthorized();
+    const player = await prisma.player.findUnique({
+      where: { userId },
+      select: { id: true, clubId: true, fullName: true, position: true, jerseyNumber: true },
+    });
+    return { playerId: player?.id ?? null, player };
   });
 };

@@ -5,7 +5,10 @@ export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  // Davet koduyla giriş denenip kod henüz kayıt için kullanılmamışsa.
+  // Frontend bu kodu görünce kullanıcıyı kayıt akışına yönlendirir.
+  | 'NOT_REGISTERED';
 
 export interface ApiErrorBody {
   error: {

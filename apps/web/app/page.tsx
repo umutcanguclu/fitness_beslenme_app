@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSession } from '@/lib/session.js';
+import { useSession } from '@/lib/session';
 
 export default function Landing() {
   const router = useRouter();

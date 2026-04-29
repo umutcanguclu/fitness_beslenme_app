@@ -6,3 +6,4 @@ export * from './exercise.schema.js';
 export * from './program.schema.js';
 export * from './match.schema.js';
 export * from './performance.schema.js';
+export * from './chat.schema.js';

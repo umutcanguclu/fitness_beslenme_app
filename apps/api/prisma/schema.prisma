@@ -241,11 +241,13 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  coach          Coach?
-  playerProfile  Player?        @relation("PlayerUser")
-  createdPlayers Player[]       @relation("CreatedPlayers")
-  refreshTokens  RefreshToken[]
-  sentInvites    Invite[]       @relation("InvitedBy")
+  coach            Coach?
+  playerProfile    Player?        @relation("PlayerUser")
+  createdPlayers   Player[]       @relation("CreatedPlayers")
+  refreshTokens    RefreshToken[]
+  sentInvites      Invite[]       @relation("InvitedBy")
+  coachChatThreads ChatThread[]   @relation("CoachChatThreads")
+  chatMessagesSent ChatMessage[]  @relation("ChatMessageSender")
 }
 
 model RefreshToken {
@@ -275,12 +277,13 @@ model Club {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  coaches    Coach[]
-  teams      Team[]
-  players    Player[]    @relation("ClubPlayers")
-  facilities Facility[]
-  inventory  Equipment[]
-  invites    Invite[]
+  coaches      Coach[]
+  teams        Team[]
+  players      Player[]     @relation("ClubPlayers")
+  facilities   Facility[]
+  inventory    Equipment[]
+  invites      Invite[]
+  chatThreads  ChatThread[]
 }
 
 model Coach {
@@ -394,6 +397,7 @@ model Player {
   performanceTests PerformanceTestResult[]
   matchAppearances MatchAppearance[]
   invite           Invite? // playerId üzerinden tek invite
+  chatThreads      ChatThread[]
 
   @@index([clubId])
   @@index([createdById])
@@ -486,6 +490,7 @@ model Exercise {
   description            String?
   videoUrl               String?
   thumbnailUrl           String?
+  imageUrls              String[] // free-exercise-db'den alınan 2-3 karelik foto dizisi (UI flipbook olarak oynatır)
   primaryMuscles         String[] // ["quadriceps", "hamstring"]
   positionsTargeted      PositionGroup[] // boş = herkese uygun
   minAge                 Int?
@@ -663,4 +668,44 @@ model MatchAppearance {
 
   @@unique([matchId, playerId])
   @@index([playerId])
+}
+
+// ============================================================
+// CHAT (1-1 koç ↔ oyuncu)
+// ============================================================
+
+// Bir koç ile bir oyuncu arasında tek thread. Aynı kulüp kapsamında.
+// coachLastReadAt / playerLastReadAt: her iki taraf okudu işareti — kendi
+// tarafından sonra gelen mesajlar "okunmamış" sayılır.
+model ChatThread {
+  id               String    @id @default(uuid())
+  clubId           String
+  coachId          String // User.id (role=coach)
+  playerId         String // Player.id
+  coachLastReadAt  DateTime?
+  playerLastReadAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  club     Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  coach    User          @relation("CoachChatThreads", fields: [coachId], references: [id], onDelete: Cascade)
+  player   Player        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@unique([coachId, playerId])
+  @@index([clubId])
+  @@index([playerId])
+}
+
+model ChatMessage {
+  id       String   @id @default(uuid())
+  threadId String
+  senderId String // User.id (koç ya da oyuncunun userId'si)
+  body     String
+  sentAt   DateTime @default(now())
+
+  thread ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User       @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, sentAt])
 }

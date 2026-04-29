@@ -89,7 +89,15 @@
       "Bash(node_modules/.bin/tsc.cmd --noEmit)",
       "Bash(node_modules/.bin/vitest.cmd run *)",
       "Bash(pnpm --filter @fittrack/api dev)",
-      "PowerShell(pnpm *)"
+      "PowerShell(pnpm *)",
+      "PowerShell(pnpm install *)",
+      "PowerShell(Set-Content *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(echo \"API: $\\(curl -s -o /dev/null -w \"%{http_code}\" --max-time 3 http://localhost:3000/health\\)\")",
+      "Bash(\"/c/Program Files/PostgreSQL/17/bin/psql.exe\" -U postgres -d fittrack -c \"\\\\dt \\\\\"Chat*\\\\\"\")",
+      "PowerShell(pnpm typecheck *)",
+      "Bash([ -f \"$d/page.tsx\" ])",
+      "Bash(mv __TRACKED_VAR__/page.tsx __TRACKED_VAR__/page-client.tsx)"
     ]
   }
 }

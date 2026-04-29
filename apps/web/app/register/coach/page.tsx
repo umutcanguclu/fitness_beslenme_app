@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthShell } from '@/components/AuthShell.js';
-import { ErrorMessage } from '@/components/ErrorMessage.js';
-import { registerCoach } from '@/lib/session.js';
-import type { ApiError } from '@/lib/api.js';
+import { AuthShell } from '@/components/AuthShell';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { registerCoach } from '@/lib/session';
+import type { ApiError } from '@/lib/api';
 
 export default function RegisterCoachPage() {
   const router = useRouter();

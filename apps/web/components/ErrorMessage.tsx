@@ -1,4 +1,4 @@
-import type { ApiError } from '@/lib/api.js';
+import type { ApiError } from '@/lib/api';
 
 const TR_MESSAGES: Record<string, string> = {
   UNAUTHORIZED: 'E-posta veya şifre hatalı.',

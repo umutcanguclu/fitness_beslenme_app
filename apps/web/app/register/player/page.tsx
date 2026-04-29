@@ -1,16 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AuthShell } from '@/components/AuthShell.js';
-import { ErrorMessage } from '@/components/ErrorMessage.js';
-import { registerPlayer } from '@/lib/session.js';
-import type { ApiError } from '@/lib/api.js';
+import { AuthShell } from '@/components/AuthShell';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { registerPlayer } from '@/lib/session';
+import type { ApiError } from '@/lib/api';
 
 export default function RegisterPlayerPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPlayerForm />
+    </Suspense>
+  );
+}
+
+function RegisterPlayerForm() {
   const router = useRouter();
-  const [inviteCode, setInviteCode] = useState('');
+  const searchParams = useSearchParams();
+  const presetCode = (searchParams.get('code') ?? '').toUpperCase().slice(0, 8);
+  const [inviteCode, setInviteCode] = useState(presetCode);
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');

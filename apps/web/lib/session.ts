@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api, tokens } from './api.js';
+import { api, tokens } from './api';
 
 export interface SessionUser {
   id: string;
@@ -20,6 +20,16 @@ export async function login(email: string, password: string): Promise<SessionUse
   const res = await api<AuthResponse>('/auth/login', {
     method: 'POST',
     body: { email, password },
+    skipAuth: true,
+  });
+  tokens.set(res.tokens.accessToken, res.tokens.refreshToken);
+  return res.user;
+}
+
+export async function loginWithCode(code: string): Promise<SessionUser> {
+  const res = await api<AuthResponse>('/auth/login/code', {
+    method: 'POST',
+    body: { code: code.toUpperCase().trim() },
     skipAuth: true,
   });
   tokens.set(res.tokens.accessToken, res.tokens.refreshToken);

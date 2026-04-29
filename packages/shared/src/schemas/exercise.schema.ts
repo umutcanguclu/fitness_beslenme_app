@@ -15,6 +15,7 @@ export const ExerciseSchema = z.object({
   description: z.string().max(2000).nullable().optional(),
   videoUrl: z.string().url().nullable().optional(),
   thumbnailUrl: z.string().url().nullable().optional(),
+  imageUrls: z.array(z.string().url()).default([]),
   primaryMuscles: z.array(z.string()).default([]),
   positionsTargeted: z.array(PositionGroupSchema).default([]),
   minAge: z.number().int().min(8).max(60).nullable().optional(),

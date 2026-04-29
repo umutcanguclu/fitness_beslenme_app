@@ -5,11 +5,17 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
+    "build:static": "cross-env NEXT_BUILD_STATIC=true next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cap:sync": "pnpm build:static && cap sync",
+    "cap:open:android": "cap open android",
+    "cap:run:android": "pnpm build:static && cap sync android && cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
     "@fittrack/shared": "workspace:*",
     "next": "^15.0.3",
     "react": "^19.0.0",
@@ -17,7 +23,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
     "@types/node": "^22.9.0",
+    "cross-env": "^7.0.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",

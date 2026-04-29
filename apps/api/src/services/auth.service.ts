@@ -138,6 +138,33 @@ export class AuthService {
     return { user: toSharedUser(user), tokens };
   }
 
+  // Daha önce davet koduyla kayıt olmuş oyuncu kodu kalıcı giriş yöntemi olarak
+  // kullanabilir. Hem davet süresi (expiresAt) hem de tek-kullanım kontrolü
+  // burada DEVRE DIŞI — kullanıcı bağlandıktan sonra kod onun "PIN"i.
+  // İki ayrı hata: kod hiç yok (404) vs kod var ama daha önce kayıt olunmamış (409).
+  async loginWithCode(rawCode: string): Promise<AuthResult> {
+    const code = rawCode.toUpperCase().trim();
+    const invite = await prisma.invite.findUnique({ where: { code } });
+    if (!invite) {
+      throw AppError.notFound('Bu davet kodu bulunamadı');
+    }
+    if (!invite.acceptedBy) {
+      // Frontend bu kodu görünce kullanıcıyı /register/player?code=XXX'a yönlendirir.
+      throw new AppError(
+        'NOT_REGISTERED',
+        'Bu kodla henüz hesap açılmamış. Önce kayıt olunmalı.',
+        409,
+        { code },
+      );
+    }
+    const user = await this.users.findById(invite.acceptedBy);
+    if (!user) {
+      throw AppError.unauthorized('Hesap artık mevcut değil');
+    }
+    const tokens = await this.issueTokens(user);
+    return { user: toSharedUser(user), tokens };
+  }
+
   async refresh(rawRefreshToken: string): Promise<AuthTokens> {
     const tokenHash = hashRefreshToken(rawRefreshToken);
     const stored = await this.refreshTokens.findActiveByHash(tokenHash);

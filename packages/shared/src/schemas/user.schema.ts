@@ -46,6 +46,14 @@ export const LoginInputSchema = z.object({
 });
 export type LoginInput = z.infer<typeof LoginInputSchema>;
 
+// Davet koduyla şifresiz giriş — oyuncu zaten kayıt olmuşsa kod onun
+// "kalıcı PIN"i gibi davranır. Kod-bazlı oturum güvenliği zayıf olduğundan
+// (8 karakter, ~39 bit entropy), production'da bu uca rate-limit gerekir.
+export const LoginByCodeInputSchema = z.object({
+  code: z.string().min(4).max(16),
+});
+export type LoginByCodeInput = z.infer<typeof LoginByCodeInputSchema>;
+
 export const AuthTokensSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),

@@ -14,8 +14,24 @@ import {
   type WrittenProgram,
 } from './program-engine/program-writer.js';
 
+interface ExerciseSummary {
+  id: string;
+  slug: string;
+  nameTr: string;
+  nameEn: string;
+  category: string;
+  description: string | null;
+  requiredEquipment: string[];
+  thumbnailUrl: string | null;
+  imageUrls: string[];
+}
+
 export type ProgramWithSessions = TrainingProgram & {
-  sessions: (TrainingSession & { exercises: SessionExercise[] })[];
+  sessions: (TrainingSession & {
+    exercises: (SessionExercise & { exercise: ExerciseSummary })[];
+    logs: SessionLog[];
+    attendance: TrainingAttendance[];
+  })[];
 };
 
 export interface GenerateForPlayerInput {
@@ -65,11 +81,33 @@ export const programService = {
         ...(range.to ? { lte: range.to } : {}),
       };
     }
+    // Egzersiz adlarını da inline döndür ki UI ek istek atmadan render edebilsin.
     return prisma.trainingProgram.findMany({
       where,
       include: {
         sessions: {
-          include: { exercises: { orderBy: { order: 'asc' } } },
+          include: {
+            exercises: {
+              orderBy: { order: 'asc' },
+              include: {
+                exercise: {
+                  select: {
+                    id: true,
+                    slug: true,
+                    nameTr: true,
+                    nameEn: true,
+                    category: true,
+                    description: true,
+                    requiredEquipment: true,
+                    thumbnailUrl: true,
+                    imageUrls: true,
+                  },
+                },
+              },
+            },
+            logs: true,
+            attendance: true,
+          },
           orderBy: { date: 'asc' },
         },
       },
