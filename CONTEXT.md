@@ -27,22 +27,26 @@ Vizyon ve kapsam için `GDD.md`. Bu **bir genel fitness app'i değil** — geçm
 ```
 fittrack/
 ├── apps/
-│   └── api/                          # Fastify + Prisma + Postgres
-│       ├── src/
-│       │   ├── routes/               # Fastify route handler'lar (thin)
-│       │   ├── services/             # business logic
-│       │   │   ├── auth.service.ts
-│       │   │   └── program-engine/   # kural tabanlı program üretici
-│       │   ├── repositories/         # Prisma wrapper'lar
-│       │   ├── plugins/              # auth plugin (requireAuth hook)
-│       │   ├── lib/                  # env, errors, prisma, password, tokens
-│       │   ├── app.ts                # Fastify build
-│       │   └── server.ts             # entrypoint
-│       ├── prisma/
-│       │   ├── schema.prisma
-│       │   ├── seed.ts
-│       │   └── seed/exercises.ts     # ~190 futbol egzersizi (idempotent upsert)
-│       └── test/                     # vitest (lib + entegrasyon testleri)
+│   ├── api/                          # Fastify + Prisma + Postgres
+│   │   ├── src/
+│   │   │   ├── routes/               # Fastify route handler'lar (thin)
+│   │   │   ├── services/             # business logic
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   └── program-engine/   # kural tabanlı program üretici
+│   │   │   ├── repositories/         # Prisma wrapper'lar
+│   │   │   ├── plugins/              # auth plugin (requireAuth hook)
+│   │   │   ├── lib/                  # env, errors, prisma, password, tokens
+│   │   │   ├── app.ts                # Fastify build
+│   │   │   └── server.ts             # entrypoint
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma
+│   │   │   ├── seed.ts
+│   │   │   └── seed/exercises.ts     # ~190 futbol egzersizi (idempotent upsert)
+│   │   └── test/                     # vitest (lib + entegrasyon testleri)
+│   └── mobile/                       # Flutter (Android, applicationId: app.fittrack)
+│       ├── lib/main.dart             # FittrackApp + SkeletonHome (Türkçe, Material 3)
+│       ├── pubspec.yaml              # ek dep yok — sadece flutter + cupertino_icons
+│       └── test/widget_test.dart
 ├── packages/
 │   └── shared/                       # @fittrack/shared
 │       └── src/schemas/              # Zod schemas (.ts olarak doğrudan export, build yok)
@@ -64,7 +68,7 @@ fittrack/
 - JWT access + refresh, bcrypt, plugins/auth.ts içinde `requireAuth` hook
 - Zod (validation) — schemalar `@fittrack/shared`'dan, frontend ile paylaşılır
 - Pino (logging), Vitest (test)
-- Frontend stack kararı VERİLMEDİ. UI kodu yazma.
+- **Frontend: Flutter 3.41+ / Dart 3.11+** (Android only şimdilik, iOS ikincil — `flutter create --platforms=ios .` ile sonradan eklenebilir). İskelet `apps/mobile/`'da: `flutter create` default'u + futbol context'ine göre `lib/main.dart` (FittrackApp + SkeletonHome, Türkçe, Material 3, lacivert-yeşil seed `0xFF1B5E20`). Auth/HTTP/state mgmt/i18n dependency'leri YOK — ilk gerçek özellikle birlikte tek tek eklenecek (her dep için onay). GDD.md'deki dep listesi (Riverpod 2/dio/freezed/fl_chart vb.) eski genel-fitness app için seçilmişti, futbol app'i için yeniden değerlendirilecek.
 
 ## DB (Postgres lokal)
 
@@ -159,4 +163,4 @@ Kalibrasyon notları: `apps/api/src/services/program-engine/README.md`.
 9. **Yorum minimum.** Sadece WHY açıklayan satırlar. İsimler kendini açıklar.
 10. **`_archive/` altına dokunma.** Referans için duruyor.
 11. **Yeni .md oluşturma.** Mevcut README/GDD/CONTEXT'i gerekirse güncelle.
-12. **Frontend stack yok.** UI kodu yazma. API + engine + test odakla.
+12. **Frontend: Flutter** — `apps/mobile/` iskeleti hazır (Android, applicationId: `app.fittrack`). Yeni `pub` dependency eklerken **her seferinde onay al** (`flutter pub add` öncesi gerekçe). UI özellikleri yazarken: Türkçe metinler, Material 3, mobile-first, offline-tolerant düşün.

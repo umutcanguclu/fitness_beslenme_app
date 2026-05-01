@@ -2,33 +2,57 @@
 
 Alt lig + akademi futbol antrenörleri için "antrenör + oyuncu" platformu. Antrenör oyuncu profillerini ve kulüp kaynaklarını girer, kural tabanlı engine her oyuncuya **haftalık antrenman programı** üretir. Oyuncu telefonundan programını görür, RPE / katılım girer.
 
-> Vizyon ve faz planı: [GDD.md](./GDD.md)
-> Agent çalışma kuralları: [CONTEXT.md](./CONTEXT.md)
+> Agent çalışma kuralları ve güncel vizyon: [CONTEXT.md](./CONTEXT.md)
+> [GDD.md](./GDD.md) — eski genel-fitness vizyonu, futbol pivotundan önce; referans amaçlı duruyor.
 
 ## Mimari
 
 ```
 fittrack/
 ├── apps/
-│   └── api/                          # Fastify + Prisma + Postgres (TypeScript)
-│       ├── src/
-│       │   ├── routes/               # Fastify route handler'lar
-│       │   ├── services/             # business logic
-│       │   │   ├── auth.service.ts
-│       │   │   └── program-engine/   # kural tabanlı program üretici
-│       │   ├── repositories/         # Prisma wrapper'lar
-│       │   ├── plugins/auth.ts       # requireAuth hook
-│       │   └── lib/                  # env, errors, prisma, password, tokens
-│       ├── prisma/
-│       │   ├── schema.prisma
-│       │   ├── seed.ts
-│       │   └── seed/exercises.ts     # ~190 futbol egzersizi
-│       └── test/                     # vitest
+│   ├── api/                          # Fastify + Prisma + Postgres (TypeScript)
+│   │   ├── src/
+│   │   │   ├── routes/               # Fastify route handler'lar
+│   │   │   ├── services/             # business logic
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   └── program-engine/   # kural tabanlı program üretici
+│   │   │   ├── repositories/         # Prisma wrapper'lar
+│   │   │   ├── plugins/auth.ts       # requireAuth hook
+│   │   │   └── lib/                  # env, errors, prisma, password, tokens
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma
+│   │   │   ├── seed.ts
+│   │   │   └── seed/exercises.ts     # ~190 futbol egzersizi
+│   │   └── test/                     # vitest
+│   └── mobile/                       # Flutter (Android, iskelet — auth/HTTP/state mgmt henüz yok)
+│       ├── lib/main.dart
+│       ├── pubspec.yaml
+│       └── test/widget_test.dart
 └── packages/
     └── shared/                       # @fittrack/shared (Zod schemas + types)
 ```
 
-Frontend stack kararı henüz verilmedi — bu repo şimdilik **API + engine + test** içerir.
+**Frontend: Flutter** (mobil-first Android, iOS ikincil) — iskelet `apps/mobile/` altında. Şu an default `flutter create` çıktısı + futbol context'ine göre yeniden yazılmış `main.dart`/`widget_test.dart`. Auth/HTTP/state mgmt dependency'leri henüz eklenmedi; ilk gerçek özellikle birlikte tek tek değerlendirilecek.
+
+Android Studio + emulator + flutter run için: `studio.bat` (root). Default'ta:
+1. Android Studio'yu açar
+2. İlk AVD'yi (örn. `Medium_Phone`) arka planda başlatır
+3. `adb shell getprop sys.boot_completed` ile emulator boot olmasını bekler (max 180s)
+4. Yeni cmd penceresinde `flutter run apps/mobile` başlatır (hot reload için pencere açık kalır)
+
+Modlar:
+- `studio.bat` — Studio + AVD + flutter run zinciri
+- `studio.bat --check` — durum raporu (Studio / SDK / adb / AVD / apps/mobile), aksiyon yok
+- `studio.bat --install` — Studio yoksa winget ile kurar
+- `studio.bat --no-app` — Studio + AVD, flutter run atla
+- `studio.bat --no-emu` — sadece Studio (AVD + flutter run atla)
+- `studio.bat --avd <ad>` — belirli bir AVD'yi başlat
+
+Manuel mobil çalıştırma:
+```cmd
+cd apps\mobile
+flutter run
+```
 
 ## Ön gereksinimler
 

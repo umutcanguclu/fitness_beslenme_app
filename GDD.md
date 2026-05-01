@@ -1,9 +1,12 @@
 # FitTrack — Game/Product Design Document
 
+> ⚠️ **ESKİ — futbol pivotundan ÖNCE yazıldı (referans amaçlı duruyor).**
+> Bu doküman genel fitness uygulamasının (workout/PR/GPS/beslenme) vizyonu. Proje şu an **alt lig + akademi futbol antrenörleri için "antrenör + oyuncu" platformu**na pivot etti. Güncel vizyon ve kurallar için: [CONTEXT.md](./CONTEXT.md) + [README.md](./README.md). Buradaki kapsam, veri modeli, frontend dependency listesi (Riverpod/dio/freezed/fl_chart vb.) yeni futbol odağı için **bağlayıcı değildir** — `apps/mobile/` Flutter iskeleti kurulurken yeniden değerlendirilecek.
+
 > **Proje türü:** Kişisel / Portfolio projesi
 > **Sahip:** GarroshCan (Temreon Studio)
 > **Durum:** Planlama → MVP geliştirme
-> **Son güncelleme:** Ocak 2026
+> **Son güncelleme:** Ocak 2026 (eski vizyon)
 
 ---
 
