@@ -12,6 +12,21 @@ class CreateTeamInput {
   const CreateTeamInput({required this.name, required this.category, required this.season});
 }
 
+class UpdateTeamInput {
+  final String? name;
+  final String? category;
+  final String? season;
+  final bool? active;
+  const UpdateTeamInput({this.name, this.category, this.season, this.active});
+
+  Map<String, dynamic> toJson() => {
+        if (name != null) 'name': name,
+        if (category != null) 'category': category,
+        if (season != null) 'season': season,
+        if (active != null) 'active': active,
+      };
+}
+
 class CreatePlayerInput {
   final String fullName;
   final DateTime birthDate;
@@ -72,6 +87,16 @@ class TeamsApi {
   Future<Team> getTeam(String teamId) async {
     try {
       final res = await client.dio.get('/teams/$teamId');
+      ensureOk(res);
+      return Team.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
+  Future<Team> updateTeam(String teamId, UpdateTeamInput input) async {
+    try {
+      final res = await client.dio.patch('/teams/$teamId', data: input.toJson());
       ensureOk(res);
       return Team.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {

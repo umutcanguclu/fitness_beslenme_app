@@ -14,6 +14,7 @@ import { programRoutes } from './routes/programs.js';
 import { matchRoutes } from './routes/matches.js';
 import { performanceTestRoutes } from './routes/performance-tests.js';
 import { chatRoutes } from './routes/chat.js';
+import { chatWsRoutes } from './routes/chat-ws.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -95,6 +96,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(matchRoutes);
   await app.register(performanceTestRoutes);
   await app.register(chatRoutes);
+  await app.register(chatWsRoutes);
 
   return app;
 }

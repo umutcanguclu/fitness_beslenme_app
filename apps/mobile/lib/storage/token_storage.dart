@@ -4,6 +4,7 @@ import '../models/auth_tokens.dart';
 class TokenStorage {
   static const _accessKey = 'fittrack.accessToken';
   static const _refreshKey = 'fittrack.refreshToken';
+  static const _themeKey = 'fittrack.themeMode'; // 'light' | 'dark' | 'system'
 
   final FlutterSecureStorage _storage;
 
@@ -26,4 +27,8 @@ class TokenStorage {
     await _storage.delete(key: _accessKey);
     await _storage.delete(key: _refreshKey);
   }
+
+  Future<String?> readThemeMode() => _storage.read(key: _themeKey);
+  Future<void> writeThemeMode(String mode) =>
+      _storage.write(key: _themeKey, value: mode);
 }

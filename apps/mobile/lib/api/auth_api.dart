@@ -96,6 +96,44 @@ class AuthApi {
     }
   }
 
+  Future<AuthTokens> refresh(String refreshToken) async {
+    try {
+      final res = await client.dio.post('/auth/refresh',
+          data: {'refreshToken': refreshToken});
+      _ensureOk(res);
+      return AuthTokens.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _toAuthException(e);
+    }
+  }
+
+  // Returns dev token if email exists in dev mode (so UI can auto-fill).
+  // In production, response is generic and dev token is null.
+  Future<String?> forgotPassword(String email) async {
+    try {
+      final res = await client.dio.post('/auth/forgot-password',
+          data: {'email': email.trim().toLowerCase()});
+      _ensureOk(res);
+      final data = res.data;
+      if (data is Map<String, dynamic>) {
+        return data['devToken'] as String?;
+      }
+      return null;
+    } on DioException catch (e) {
+      throw _toAuthException(e);
+    }
+  }
+
+  Future<void> resetPassword({required String token, required String newPassword}) async {
+    try {
+      final res = await client.dio.post('/auth/reset-password',
+          data: {'token': token, 'newPassword': newPassword});
+      _ensureOk(res);
+    } on DioException catch (e) {
+      throw _toAuthException(e);
+    }
+  }
+
   void _ensureOk(Response res) {
     final code = res.statusCode ?? 0;
     if (code >= 200 && code < 300) return;

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../api/api_exception.dart';
+import '../api/chat_api.dart';
 import '../api/clubs_api.dart';
 import '../api/health_api.dart';
 import '../api/matches_api.dart';
+import '../api/players_api.dart';
 import '../api/programs_api.dart';
 import '../api/teams_api.dart';
 import '../models/club.dart';
 import '../models/team.dart';
+import '../storage/token_storage.dart';
 import '../util/labels.dart';
 import 'team_create_screen.dart';
 import 'team_detail_screen.dart';
@@ -14,17 +17,23 @@ import 'team_detail_screen.dart';
 class ClubScreen extends StatefulWidget {
   final ClubsApi clubsApi;
   final TeamsApi teamsApi;
+  final PlayersApi playersApi;
   final ProgramsApi programsApi;
   final MatchesApi matchesApi;
   final HealthApi healthApi;
+  final ChatApi chatApi;
+  final TokenStorage tokenStorage;
 
   const ClubScreen({
     super.key,
     required this.clubsApi,
     required this.teamsApi,
+    required this.playersApi,
     required this.programsApi,
     required this.matchesApi,
     required this.healthApi,
+    required this.chatApi,
+    required this.tokenStorage,
   });
 
   @override
@@ -84,7 +93,7 @@ class _ClubScreenState extends State<ClubScreen> {
             return _ClubBody(
               data: data,
               onTeamTap: _openTeam,
-              onTeamLongPress: _confirmDeleteTeam,
+              onTeamLongPress: _showTeamActions,
             );
           },
         ),
@@ -101,9 +110,12 @@ class _ClubScreenState extends State<ClubScreen> {
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => TeamDetailScreen(
         teamsApi: widget.teamsApi,
+        playersApi: widget.playersApi,
         programsApi: widget.programsApi,
         matchesApi: widget.matchesApi,
         healthApi: widget.healthApi,
+        chatApi: widget.chatApi,
+        tokenStorage: widget.tokenStorage,
         team: team,
       ),
     ));
@@ -118,6 +130,46 @@ class _ClubScreenState extends State<ClubScreen> {
       _load();
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('"${created.name}" oluşturuldu')));
+    }
+  }
+
+  Future<void> _showTeamActions(Team team) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Düzenle'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _editTeam(team);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete_outline, color: Theme.of(ctx).colorScheme.error),
+              title: Text('Sil', style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _confirmDeleteTeam(team);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _editTeam(Team team) async {
+    final updated = await Navigator.of(context).push<Team>(MaterialPageRoute(
+      builder: (_) => TeamCreateScreen(teamsApi: widget.teamsApi, existing: team),
+    ));
+    if (updated != null && mounted) {
+      _load();
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('"${updated.name}" güncellendi')));
     }
   }
 

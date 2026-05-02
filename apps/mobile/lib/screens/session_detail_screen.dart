@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../api/api_exception.dart';
 import '../api/programs_api.dart';
 import '../models/program.dart';
+import '../util/exercise_visuals.dart';
 import '../util/labels.dart';
 
 class SessionDetailScreen extends StatefulWidget {
@@ -34,36 +35,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(dayLong(s.date.weekday), style: theme.textTheme.titleSmall),
-                  Text(formatDate(s.date),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _Chip(icon: Icons.timer_outlined, label: '${s.durationMinutes} dk'),
-                      const SizedBox(width: 8),
-                      _Chip(icon: Icons.bolt_outlined, label: 'Şiddet ${s.intensity}/5'),
-                      const SizedBox(width: 8),
-                      _Chip(icon: Icons.group_outlined, label: sessionTypeLabel(s.type)),
-                    ],
-                  ),
-                  if (s.notes != null && s.notes!.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(s.notes!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant)),
-                  ],
-                ],
-              ),
-            ),
-          ),
+          _SessionHeaderCard(session: s),
           const SizedBox(height: 16),
           Text('Egzersizler', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
@@ -105,26 +77,155 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   }
 }
 
-class _Chip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _Chip({required this.icon, required this.label});
+class _SessionHeaderCard extends StatelessWidget {
+  final TrainingSession session;
+  const _SessionHeaderCard({required this.session});
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    final visual = visualForCategory(session.category);
+    final intensityClr = intensityColor(session.intensity);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
         children: [
-          Icon(icon, size: 14, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 4),
-          Text(label, style: theme.textTheme.bodySmall),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [visual.color, visual.color.withValues(alpha: 0.7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(visual.icon, color: Colors.white, size: 32),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(trainingCategoryLabel(session.category),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          )),
+                      const SizedBox(height: 2),
+                      Text('${dayLong(session.date.weekday)} · ${formatDate(session.date)}',
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 13)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                _MetricBox(
+                    icon: Icons.timer_outlined,
+                    value: '${session.durationMinutes}',
+                    unit: 'dk',
+                    color: theme.colorScheme.primary),
+                const SizedBox(width: 12),
+                _MetricBox(
+                    icon: Icons.bolt_outlined,
+                    value: '${session.intensity}/5',
+                    unit: 'şiddet',
+                    color: intensityClr),
+                const SizedBox(width: 12),
+                _MetricBox(
+                    icon: Icons.group_outlined,
+                    value: sessionTypeLabel(session.type),
+                    unit: 'tip',
+                    color: theme.colorScheme.secondary,
+                    isText: true),
+              ],
+            ),
+          ),
+          if (session.notes != null && session.notes!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 18, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(session.notes!)),
+                  ],
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _MetricBox extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String unit;
+  final Color color;
+  final bool isText;
+  const _MetricBox({
+    required this.icon,
+    required this.value,
+    required this.unit,
+    required this.color,
+    this.isText = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(height: 4),
+            Text(value,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isText ? 13 : 16,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 2),
+            Text(unit,
+                style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant, fontSize: 10)),
+          ],
+        ),
       ),
     );
   }
@@ -138,27 +239,77 @@ class _ExerciseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final visual = visualForCategory(item.exercise.category);
+    final mediaUrl = item.exercise.thumbnailUrl;
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text('$index',
-                  style: TextStyle(
-                    color: theme.colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ),
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [visual.color, visual.color.withValues(alpha: 0.7)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: mediaUrl != null && mediaUrl.isNotEmpty
+                      ? Image.network(
+                          mediaUrl,
+                          fit: BoxFit.cover,
+                          width: 64,
+                          height: 64,
+                          errorBuilder: (_, __, ___) =>
+                              Icon(visual.icon, color: Colors.white, size: 32),
+                          loadingBuilder: (_, child, prog) =>
+                              prog == null
+                                  ? child
+                                  : Center(
+                                      child: SizedBox(
+                                        width: 18, height: 18,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white.withValues(alpha: 0.8)),
+                                      ),
+                                    ),
+                        )
+                      : Icon(visual.icon, color: Colors.white, size: 32),
+                ),
+              ),
+              Positioned(
+                right: -2,
+                bottom: -2,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: theme.colorScheme.surface, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$index',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

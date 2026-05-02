@@ -1,32 +1,44 @@
 import 'package:flutter/material.dart';
 import '../api/api_exception.dart';
+import '../api/chat_api.dart';
 import '../api/health_api.dart';
 import '../api/matches_api.dart';
+import '../api/players_api.dart';
 import '../api/programs_api.dart';
 import '../api/teams_api.dart';
 import '../models/player.dart';
 import '../models/team.dart';
+import '../storage/token_storage.dart';
 import '../util/labels.dart';
 import 'availability_screen.dart';
+import 'chat_room_screen.dart';
 import 'injuries_screen.dart';
 import 'matches_screen.dart';
 import 'perf_tests_screen.dart';
 import 'player_create_screen.dart';
+import 'player_edit_screen.dart';
+import 'player_stats_screen.dart';
 import 'program_view_screen.dart';
 
 class TeamDetailScreen extends StatefulWidget {
   final TeamsApi teamsApi;
+  final PlayersApi playersApi;
   final ProgramsApi programsApi;
   final MatchesApi matchesApi;
   final HealthApi healthApi;
+  final ChatApi chatApi;
+  final TokenStorage tokenStorage;
   final Team team;
 
   const TeamDetailScreen({
     super.key,
     required this.teamsApi,
+    required this.playersApi,
     required this.programsApi,
     required this.matchesApi,
     required this.healthApi,
+    required this.chatApi,
+    required this.tokenStorage,
     required this.team,
   });
 
@@ -97,6 +109,43 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
         canEdit: false,
       ),
     ));
+  }
+
+  Future<void> _editPlayer(Player p) async {
+    final updated = await Navigator.of(context).push<bool>(MaterialPageRoute(
+      builder: (_) => PlayerEditScreen(playersApi: widget.playersApi, player: p),
+    ));
+    if (updated == true && mounted) _load();
+  }
+
+  void _openStats(Player p) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => PlayerStatsScreen(
+        programsApi: widget.programsApi,
+        healthApi: widget.healthApi,
+        playerId: p.id,
+        playerName: p.fullName,
+      ),
+    ));
+  }
+
+  Future<void> _openChat(Player p) async {
+    try {
+      final thread = await widget.chatApi.startThreadWithPlayer(p.id);
+      if (!mounted) return;
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ChatRoomScreen(
+          chatApi: widget.chatApi,
+          tokenStorage: widget.tokenStorage,
+          threadId: thread.id,
+          currentUserId: thread.coachId,
+          otherPartyName: p.fullName,
+        ),
+      ));
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 
   Future<void> _confirmRemovePlayer(Player p) async {
@@ -240,6 +289,9 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                           onInjuries: () => _openInjuries(sorted[i].player),
                           onPerfTests: () => _openPerfTests(sorted[i].player),
                           onAvailability: () => _openAvailability(sorted[i].player),
+                          onEdit: () => _editPlayer(sorted[i].player),
+                          onChat: () => _openChat(sorted[i].player),
+                          onStats: () => _openStats(sorted[i].player),
                         ),
                       ],
                     ],
@@ -262,6 +314,9 @@ class _PlayerTile extends StatelessWidget {
   final VoidCallback onInjuries;
   final VoidCallback onPerfTests;
   final VoidCallback onAvailability;
+  final VoidCallback onEdit;
+  final VoidCallback onChat;
+  final VoidCallback onStats;
   const _PlayerTile({
     required this.player,
     required this.onLongPress,
@@ -269,6 +324,9 @@ class _PlayerTile extends StatelessWidget {
     required this.onInjuries,
     required this.onPerfTests,
     required this.onAvailability,
+    required this.onEdit,
+    required this.onChat,
+    required this.onStats,
   });
 
   @override
@@ -311,40 +369,53 @@ class _PlayerTile extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) {
         final theme = Theme.of(ctx);
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(p.fullName, style: theme.textTheme.titleLarge),
-              const SizedBox(height: 4),
-              Text(positionLabel(p.position),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant)),
-              const SizedBox(height: 16),
-              if (p.jerseyNumber != null) _kv('Forma', '${p.jerseyNumber}'),
-              if (p.detailedPosition != null) _kv('Detay mevki', detailedPositionLabel(p.detailedPosition!)),
-              _kv('Tercih ayak', footLabel(p.preferredFoot)),
-              if (p.heightCm != null) _kv('Boy', '${p.heightCm!.round()} cm'),
-              if (p.weightKg != null) _kv('Kilo', '${p.weightKg!.round()} kg'),
-              _kv('Statü', employmentLabel(p.employmentStatus)),
-              if (p.birthDate != null)
-                _kv('Doğum', '${p.birthDate!.day}.${p.birthDate!.month}.${p.birthDate!.year}'),
-              const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 12),
-              _ActionRow(icon: Icons.calendar_month, label: 'Programlar',
-                  onTap: () { Navigator.pop(ctx); onPrograms(); }),
-              _ActionRow(icon: Icons.healing, label: 'Sakatlıklar',
-                  onTap: () { Navigator.pop(ctx); onInjuries(); }),
-              _ActionRow(icon: Icons.timer_outlined, label: 'Performans testleri',
-                  onTap: () { Navigator.pop(ctx); onPerfTests(); }),
-              _ActionRow(icon: Icons.directions_run, label: 'Hazırbulunuşluk geçmişi',
-                  onTap: () { Navigator.pop(ctx); onAvailability(); }),
-            ],
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(p.fullName, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 4),
+                Text(positionLabel(p.position),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 16),
+                if (p.jerseyNumber != null) _kv('Forma', '${p.jerseyNumber}'),
+                if (p.detailedPosition != null) _kv('Detay mevki', detailedPositionLabel(p.detailedPosition!)),
+                _kv('Tercih ayak', footLabel(p.preferredFoot)),
+                if (p.heightCm != null) _kv('Boy', '${p.heightCm!.round()} cm'),
+                if (p.weightKg != null) _kv('Kilo', '${p.weightKg!.round()} kg'),
+                _kv('Statü', employmentLabel(p.employmentStatus)),
+                if (p.birthDate != null)
+                  _kv('Doğum', '${p.birthDate!.day}.${p.birthDate!.month}.${p.birthDate!.year}'),
+                const SizedBox(height: 16),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                _ActionRow(icon: Icons.calendar_month, label: 'Programlar',
+                    onTap: () { Navigator.pop(ctx); onPrograms(); }),
+                _ActionRow(icon: Icons.bar_chart, label: 'İstatistikler',
+                    onTap: () { Navigator.pop(ctx); onStats(); }),
+                _ActionRow(icon: Icons.healing, label: 'Sakatlıklar',
+                    onTap: () { Navigator.pop(ctx); onInjuries(); }),
+                _ActionRow(icon: Icons.timer_outlined, label: 'Performans testleri',
+                    onTap: () { Navigator.pop(ctx); onPerfTests(); }),
+                _ActionRow(icon: Icons.directions_run, label: 'Hazırbulunuşluk geçmişi',
+                    onTap: () { Navigator.pop(ctx); onAvailability(); }),
+                _ActionRow(icon: Icons.chat_bubble_outline, label: 'Mesaj gönder',
+                    onTap: () { Navigator.pop(ctx); onChat(); }),
+                _ActionRow(icon: Icons.edit_outlined, label: 'Profili düzenle',
+                    onTap: () { Navigator.pop(ctx); onEdit(); }),
+              ],
+            ),
           ),
         );
       },

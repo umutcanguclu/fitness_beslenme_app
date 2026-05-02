@@ -7,11 +7,22 @@ import {
 } from '@fittrack/shared';
 import { z } from 'zod';
 import { AppError } from '../lib/errors.js';
+import { env } from '../lib/env.js';
 import { prisma } from '../lib/prisma.js';
 import { authService } from '../services/auth.service.js';
+import { passwordResetService } from '../services/password-reset.service.js';
 
 const RefreshInputSchema = z.object({
   refreshToken: z.string().min(1),
+});
+
+const ForgotPasswordInputSchema = z.object({
+  email: z.string().email(),
+});
+
+const ResetPasswordInputSchema = z.object({
+  token: z.string().min(8),
+  newPassword: z.string().min(8).max(128),
 });
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
@@ -40,6 +51,29 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   app.post('/auth/refresh', async (request) => {
     const { refreshToken } = RefreshInputSchema.parse(request.body);
     return authService.refresh(refreshToken);
+  });
+
+  // Şifremi unuttum: bağlantı yerine token üret. Production'da email service ile gönderilir.
+  // Dev'de güvenliği bozmamak için email yoksa da 200 döner (UI bilgi sızdırmaz),
+  // ancak token sadece email gerçekse kullanıcı log'da görür.
+  app.post('/auth/forgot-password', async (request) => {
+    const { email } = ForgotPasswordInputSchema.parse(request.body);
+    const result = await passwordResetService.createResetToken(email);
+    if (result.userExists) {
+      // Dev modu: token'i log'a yaz, response'da da döndür ki UI test edebilsin.
+      // Production'da bunu kaldır + transactional email gönder.
+      app.log.info({ email, token: result.token }, 'Password reset token issued');
+      return env.NODE_ENV === 'production'
+        ? { message: 'Eğer bu adres kayıtlıysa sıfırlama bağlantısı gönderildi.' }
+        : { message: 'Sıfırlama tokeni oluşturuldu.', devToken: result.token };
+    }
+    return { message: 'Eğer bu adres kayıtlıysa sıfırlama bağlantısı gönderildi.' };
+  });
+
+  app.post('/auth/reset-password', async (request, reply) => {
+    const { token, newPassword } = ResetPasswordInputSchema.parse(request.body);
+    await passwordResetService.resetPassword(token, newPassword);
+    return reply.code(204).send();
   });
 
   app.post('/auth/logout', async (request, reply) => {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../api/auth_api.dart';
 import '../models/user.dart';
 import '../storage/token_storage.dart';
+import 'forgot_password_screen.dart';
 import 'player_register_screen.dart';
 import 'register_screen.dart';
 
@@ -132,7 +133,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       enabled: !_busy,
                       onFieldSubmitted: (_) => _submit(),
                     ),
-                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _busy ? null : () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => ForgotPasswordScreen(authApi: widget.authApi),
+                          ));
+                        },
+                        child: const Text('Şifremi unuttum'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     FilledButton(
                       onPressed: _busy ? null : _submit,
                       style: FilledButton.styleFrom(

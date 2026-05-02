@@ -11,7 +11,8 @@ const _categories = [
 
 class TeamCreateScreen extends StatefulWidget {
   final TeamsApi teamsApi;
-  const TeamCreateScreen({super.key, required this.teamsApi});
+  final Team? existing;
+  const TeamCreateScreen({super.key, required this.teamsApi, this.existing});
 
   @override
   State<TeamCreateScreen> createState() => _TeamCreateScreenState();
@@ -19,10 +20,12 @@ class TeamCreateScreen extends StatefulWidget {
 
 class _TeamCreateScreenState extends State<TeamCreateScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController();
-  final _seasonCtrl = TextEditingController(text: _defaultSeason());
-  String _category = 'u17';
+  late final _nameCtrl = TextEditingController(text: widget.existing?.name ?? '');
+  late final _seasonCtrl =
+      TextEditingController(text: widget.existing?.season ?? _defaultSeason());
+  late String _category = widget.existing?.category ?? 'u17';
   bool _busy = false;
+  bool get _isEdit => widget.existing != null;
 
   @override
   void dispose() {
@@ -35,11 +38,23 @@ class _TeamCreateScreenState extends State<TeamCreateScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
     try {
-      final team = await widget.teamsApi.createTeam(CreateTeamInput(
-        name: _nameCtrl.text.trim(),
-        category: _category,
-        season: _seasonCtrl.text.trim(),
-      ));
+      final Team team;
+      if (_isEdit) {
+        team = await widget.teamsApi.updateTeam(
+          widget.existing!.id,
+          UpdateTeamInput(
+            name: _nameCtrl.text.trim(),
+            category: _category,
+            season: _seasonCtrl.text.trim(),
+          ),
+        );
+      } else {
+        team = await widget.teamsApi.createTeam(CreateTeamInput(
+          name: _nameCtrl.text.trim(),
+          category: _category,
+          season: _seasonCtrl.text.trim(),
+        ));
+      }
       if (!mounted) return;
       Navigator.of(context).pop<Team>(team);
     } on ApiException catch (e) {
@@ -53,7 +68,7 @@ class _TeamCreateScreenState extends State<TeamCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Yeni takım')),
+      appBar: AppBar(title: Text(_isEdit ? 'Takımı düzenle' : 'Yeni takım')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -121,7 +136,7 @@ class _TeamCreateScreenState extends State<TeamCreateScreen> {
                           ? const SizedBox(
                               height: 20, width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Text('Takımı oluştur'),
+                          : Text(_isEdit ? 'Güncelle' : 'Takımı oluştur'),
                     ),
                   ],
                 ),

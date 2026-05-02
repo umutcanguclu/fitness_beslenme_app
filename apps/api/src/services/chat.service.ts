@@ -1,6 +1,7 @@
 import type { ChatMessage, ChatThread, User } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../lib/errors.js';
+import { chatHub } from './chat-hub.js';
 
 export interface ThreadParticipantRole {
   user: User;
@@ -140,6 +141,8 @@ export const chatService = {
         data: { updatedAt: new Date() },
       }),
     ]);
+    // Realtime broadcast — REST POST sonrası WS dinleyicilere yayınla.
+    chatHub.broadcast(threadId, message);
     return message;
   },
 
