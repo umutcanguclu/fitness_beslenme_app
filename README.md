@@ -470,9 +470,6 @@ studio.bat --avd Medium_Phone   REM belirli AVD
 ---
 
 ## Bağlantılı dosyalar
-
-- [CONTEXT.md](./CONTEXT.md) — AI agent çalışma kuralları + mimari kuralları
-- [GDD.md](./GDD.md) — eski FitTrack vizyonu (futbol pivotundan önce, referans amaçlı)
 - [`apps/api/src/services/program-engine/README.md`](./apps/api/src/services/program-engine/README.md) — engine kalibrasyon notları
 
 ---
